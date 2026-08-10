@@ -81,9 +81,11 @@
   .row.ok .onlinecol{border-left-color:rgba(15,110,86,.15);}
   .row.nok .onlinecol{border-left-color:rgba(121,31,31,.15);}
   .row .onlinenum{font-size:17px;font-weight:bold;color:#0f6e56;}
-  .row .onlinenum.zero{color:var(--gray-light);}
+  .row .onlinenum.ok{color:var(--green-tx);}
+  .row .onlinenum.nok{color:var(--red-tx);}
   .row .onlinenum.na{color:var(--gray-light);font-size:14px;}
   .row .onlinelbl{font-size:7.5px;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.03em;margin-top:1px;}
+  .row .metanum.online-combo{color:#0f6e56;font-weight:bold;opacity:1;}
 
   .legend{display:flex;gap:14px;margin-top:16px;font-size:9.5px;color:var(--gray-dark);flex-wrap:wrap;}
   .legend .item{display:flex;align-items:center;gap:4px;}
@@ -456,17 +458,25 @@ function render(){
     const noteHtml = inv ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>' : '';
 
     // Coluna Online: some das 13 coberturas normais; "–" para Venda Zero/Imperdoáveis (fora do escopo do online.json).
+    // Meta do dia pra julgar o Online:
+    //  - indicador NO RITMO (verde): meta dia = Meta do indicador / total de dias úteis (fatia média de 1 dia)
+    //  - indicador FORA DO RITMO (vermelho): meta dia = "faltam X hoje" (o mesmo alvo que já cobre a recuperação)
     const onlineEligible = !(key === 'VENDAZERO' || key === 'IMPERDOAVEIS');
+    const metaDiaOnline = onPace ? (metaSum / TOTAL_DIAS_UTEIS) : gap;
+    const onlineOnPace = onlineSum >= metaDiaOnline;
     let onlineColHtml = '';
     if(ONLINE_ACTIVE){
-      const onlineTxt = onlineEligible ? (onlineSum>0 ? ('+'+onlineSum.toLocaleString('pt-BR')) : '0') : '–';
-      const onlineCls = onlineEligible ? (onlineSum>0 ? 'onlinenum' : 'onlinenum zero') : 'onlinenum na';
+      const onlineTxt = onlineEligible ? onlineSum.toLocaleString('pt-BR') : '–';
+      const onlineCls = onlineEligible ? ('onlinenum ' + (onlineOnPace ? 'ok' : 'nok')) : 'onlinenum na';
       onlineColHtml = '<div class="onlinecol"><div class="'+onlineCls+'">'+onlineTxt+'</div><div class="onlinelbl">online</div></div>';
     }
 
+    const realOnlineLine = (ONLINE_ACTIVE && onlineEligible)
+      ? ('<div class="metanum online-combo">Real+Online '+(realSum+onlineSum).toLocaleString('pt-BR')+'</div>')
+      : '';
     const metaLabel = inv
-      ? ('<div class="metanum">Meta útil '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">(cheia '+Math.round(metaSum).toLocaleString('pt-BR')+')</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>')
-      : ('<div class="metanum">Meta '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>');
+      ? ('<div class="metanum">Meta útil '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">(cheia '+Math.round(metaSum).toLocaleString('pt-BR')+')</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>'+realOnlineLine)
+      : ('<div class="metanum">Meta '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>'+realOnlineLine);
 
     row.innerHTML =
       '<div class="top"><div class="name">'+LABELS[key]+noteHtml+'</div></div>'+
