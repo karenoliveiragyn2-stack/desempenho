@@ -458,8 +458,11 @@ function render(){
 
     row.className = 'row ' + (onPace ? 'ok' : 'nok');
     const arrow = onPace ? '▲' : '▼';
-    const pctShown = pct===null ? '—' : pct;
-    const statusText = gap>0 ? (inv ? ('reverter '+gap.toLocaleString('pt-BR')) : ('faltam '+gap.toLocaleString('pt-BR')+' hoje')) : (inv ? 'dentro do teto' : 'na meta');
+    const pctShown = inv ? gap.toLocaleString('pt-BR') : (pct===null ? '—' : pct);
+    const pctSuffix = inv ? '' : '%';
+    const statusText = inv
+      ? (gap>0 ? 'reverter' : 'dentro do teto')
+      : (gap>0 ? ('faltam '+gap.toLocaleString('pt-BR')+' hoje') : 'no ritmo');
     const noteHtml = inv ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>' : '';
 
     // Coluna Online: some das 13 coberturas normais; "–" para Venda Zero/Imperdoáveis (fora do escopo do online.json).
@@ -489,7 +492,7 @@ function render(){
       '<div class="top"><div class="name">'+LABELS[key]+noteHtml+'</div></div>'+
       '<div class="cells">'+
         '<div class="metacol">'+metaLabel+'</div>'+
-        '<div class="pctcol"><div class="pctline">'+arrow+' '+pctShown+'%</div><div class="statusline">'+statusText+'</div></div>'+
+        '<div class="pctcol"><div class="pctline">'+arrow+' '+pctShown+pctSuffix+'</div><div class="statusline">'+statusText+'</div></div>'+
         onlineColHtml+
       '</div>';
     rowsEl.appendChild(row);
