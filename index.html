@@ -80,12 +80,17 @@
     padding-left:8px;border-left:1px solid rgba(0,0,0,.08);}
   .row.ok .onlinecol{border-left-color:rgba(15,110,86,.15);}
   .row.nok .onlinecol{border-left-color:rgba(121,31,31,.15);}
+  .row .onlinecol.ok, .row .onlinecol.nok{border-radius:6px;padding:4px 6px;margin-left:6px;border-left:none;}
+  .row .onlinecol.ok{background:var(--green-tx);}
+  .row .onlinecol.nok{background:var(--red-tx);}
+  .row .onlinecol.ok .onlinenum, .row .onlinecol.ok .onlinelbl{color:var(--white);}
+  .row .onlinecol.nok .onlinenum, .row .onlinecol.nok .onlinelbl{color:var(--white);}
   .row .onlinenum{font-size:17px;font-weight:bold;color:#0f6e56;}
-  .row .onlinenum.ok{color:var(--green-tx);}
-  .row .onlinenum.nok{color:var(--red-tx);}
-  .row .onlinenum.na{color:var(--gray-light);font-size:14px;}
+  .row .onlinecol.na .onlinenum{color:var(--gray-light);font-size:14px;}
   .row .onlinelbl{font-size:7.5px;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.03em;margin-top:1px;}
-  .row .metanum.online-combo{color:#0f6e56;font-weight:bold;opacity:1;}
+  .row .metanum.online-combo{font-weight:bold;opacity:1;}
+  .row .metanum.online-combo.ok{color:var(--green-tx);}
+  .row .metanum.online-combo.nok{color:var(--red-tx);}
 
   .legend{display:flex;gap:14px;margin-top:16px;font-size:9.5px;color:var(--gray-dark);flex-wrap:wrap;}
   .legend .item{display:flex;align-items:center;gap:4px;}
@@ -467,12 +472,14 @@ function render(){
     let onlineColHtml = '';
     if(ONLINE_ACTIVE){
       const onlineTxt = onlineEligible ? onlineSum.toLocaleString('pt-BR') : '–';
-      const onlineCls = onlineEligible ? ('onlinenum ' + (onlineOnPace ? 'ok' : 'nok')) : 'onlinenum na';
-      onlineColHtml = '<div class="onlinecol"><div class="'+onlineCls+'">'+onlineTxt+'</div><div class="onlinelbl">online</div></div>';
+      const colCls = onlineEligible ? ('onlinecol ' + (onlineOnPace ? 'ok' : 'nok')) : 'onlinecol na';
+      onlineColHtml = '<div class="'+colCls+'"><div class="onlinenum">'+onlineTxt+'</div><div class="onlinelbl">online</div></div>';
     }
 
-    const realOnlineLine = (ONLINE_ACTIVE && onlineEligible)
-      ? ('<div class="metanum online-combo">Real+Online '+(realSum+onlineSum).toLocaleString('pt-BR')+'</div>')
+    const diferencaValor = realSum + (ONLINE_ACTIVE ? onlineSum : 0) - metaSum;
+    const diferencaCls = diferencaValor >= 0 ? 'ok' : 'nok';
+    const realOnlineLine = onlineEligible
+      ? ('<div class="metanum online-combo '+diferencaCls+'">Diferença '+diferencaValor.toLocaleString('pt-BR')+'</div>')
       : '';
     const metaLabel = inv
       ? ('<div class="metanum">Meta útil '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">(cheia '+Math.round(metaSum).toLocaleString('pt-BR')+')</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>'+realOnlineLine)
