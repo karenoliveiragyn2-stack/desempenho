@@ -53,21 +53,37 @@
   .row.ok{background:var(--green-bg);}
   .row.nok{background:var(--red-bg);}
   .row.nodata{background:var(--gray-bg);}
-  .row .top{display:flex;justify-content:space-between;align-items:baseline;}
+  .row .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
   .row .name{font-size:13px;font-weight:bold;color:#1a1a1a;}
   .row .name .sub{display:block;font-weight:normal;font-size:9.5px;color:var(--gray-light);}
-  .row .pct{font-size:15px;font-weight:bold;}
-  .row.ok .pct{color:var(--green-tx);}
-  .row.nok .pct{color:var(--red-tx);}
-  .row.nodata .pct{color:var(--gray-light);font-weight:normal;font-size:12px;}
-  .row .track{position:relative;height:7px;background:rgba(0,0,0,.08);border-radius:4px;margin-top:7px;}
-  .row .fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;}
-  .row.ok .fill{background:var(--green-tx);}
-  .row.nok .fill{background:var(--red-tx);}
-  .row .bottom{display:flex;justify-content:space-between;margin-top:5px;font-size:10.5px;color:var(--gray-dark);}
-  .row .bottom .gap{font-weight:bold;}
-  .row.nok .bottom .gap{color:var(--red-tx);}
-  .row.ok .bottom .gap{color:var(--green-tx);}
+  .row .nodatatxt{font-size:12px;color:var(--gray-light);font-style:italic;}
+
+  .row .cells{display:flex;align-items:stretch;}
+  .row .metacol{flex:0 0 27%;display:flex;flex-direction:column;justify-content:center;
+    padding-right:8px;border-right:1px solid rgba(0,0,0,.08);}
+  .row.ok .metacol{border-right-color:rgba(15,110,86,.15);}
+  .row.nok .metacol{border-right-color:rgba(121,31,31,.15);}
+  .row .metanum{font-size:10px;font-weight:normal;line-height:1.45;opacity:.8;}
+  .row.ok .metanum{color:var(--green-tx);}
+  .row.nok .metanum{color:var(--red-tx);}
+
+  .row .pctcol{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:2px 8px;min-width:0;}
+  .row .pctline{font-family:'Bookman Old Style',Georgia,serif;font-weight:bold;font-size:27px;
+    display:flex;align-items:center;gap:5px;line-height:1.05;}
+  .row.ok .pctline{color:var(--green-tx);}
+  .row.nok .pctline{color:var(--red-tx);}
+  .row .statusline{font-size:11.5px;font-weight:bold;margin-top:2px;text-align:center;}
+  .row.ok .statusline{color:var(--green-tx);}
+  .row.nok .statusline{color:var(--red-tx);}
+
+  .row .onlinecol{flex:0 0 21%;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    padding-left:8px;border-left:1px solid rgba(0,0,0,.08);}
+  .row.ok .onlinecol{border-left-color:rgba(15,110,86,.15);}
+  .row.nok .onlinecol{border-left-color:rgba(121,31,31,.15);}
+  .row .onlinenum{font-size:17px;font-weight:bold;color:#0f6e56;}
+  .row .onlinenum.zero{color:var(--gray-light);}
+  .row .onlinenum.na{color:var(--gray-light);font-size:14px;}
+  .row .onlinelbl{font-size:7.5px;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.03em;margin-top:1px;}
 
   .legend{display:flex;gap:14px;margin-top:16px;font-size:9.5px;color:var(--gray-dark);flex-wrap:wrap;}
   .legend .item{display:flex;align-items:center;gap:4px;}
@@ -107,6 +123,7 @@
       <div class="item"><span class="dot" style="background:var(--gray-bg);border:1px solid #ccc"></span>Sem meta / indisponível</div>
       <div class="item" id="legendPaceNote"></div>
       <div class="item" id="legendVZNote"></div>
+      <div class="item" id="legendOnlineNote"></div>
     </div>
   </main>
 
@@ -209,10 +226,18 @@ function paceStatus(key, metaSum, realSum){
     const gap = Math.max(0, realSum - metaEff);
     return {pct, onPace, gap, metaEff};
   }
-  const threshold = ONLINE_ACTIVE ? PACE_HOJE_PCT : PACE_ONTEM_PCT;
+  // Regra do Painel de Ritmo (confirmada 1:1 contra os dados originais):
+  // - COR sempre usa o ritmo de ONTEM (dias_corridos/dias_uteis) — fixo,
+  //   não muda quando o Online está ativo. Julgar a cor pelo alvo de HOJE
+  //   seria injusto: o dia ainda não fechou, então o Real de hoje (mesmo
+  //   com Online somado) está sempre incompleto perto de um alvo de dia
+  //   cheio.
+  // - GAP ("faltam X") sempre mira o alvo de HOJE — ceil(Meta × dia_hoje /
+  //   total_dias) — dias_corridos+1, pra mostrar o que falta fechar HOJE
+  //   pra seguir no ritmo amanhã.
   const pct = metaSum > 0 ? Math.round(realSum/metaSum*100) : null;
-  const onPace = pct !== null && pct >= threshold;
-  const gap = Math.max(0, metaSum - realSum);
+  const onPace = pct !== null && pct >= PACE_ONTEM_PCT;
+  const gap = Math.max(0, Math.ceil(metaSum * DIA_HOJE / TOTAL_DIAS_UTEIS) - realSum);
   return {pct, onPace, gap, metaEff: metaSum};
 }
 
@@ -226,6 +251,7 @@ const ctxLine = document.getElementById('ctxLine');
 const paceLine = document.getElementById('paceLine');
 const legendPaceNote = document.getElementById('legendPaceNote');
 const legendVZNote = document.getElementById('legendVZNote');
+const legendOnlineNote = document.getElementById('legendOnlineNote');
 
 let activeGroup = 'ICS_GC';
 
@@ -308,7 +334,7 @@ function onPaceRatio(itemsList, groupItems){
     itemsList.forEach(it=>{
       const d = it.indicators[key];
       if(!d || d.unavailable || d.meta === null || d.real === null) return;
-      metaSum += d.meta; realSum += d.real + onlineIncrement(it._rota, key); hasData = true;
+      metaSum += d.meta; realSum += d.real; hasData = true;
     });
     if(!hasData) return;
     total++;
@@ -351,7 +377,7 @@ function render(){
     items.forEach(it=>{
       const d = it.indicators[key];
       if(!d || d.unavailable || d.meta === null || d.real === null) return;
-      metaSum += d.meta; realSum += d.real + onlineIncrement(it._rota, key); hasData = true;
+      metaSum += d.meta; realSum += d.real; hasData = true;
     });
     if(!hasData) return;
     withDataCount++;
@@ -407,15 +433,15 @@ function render(){
       if(!d) return;
       if(d.unavailable){ anyUnavailable = true; return; }
       if(d.meta === null || d.real === null) return;
-      const inc = onlineIncrement(it._rota, key);
-      metaSum += d.meta; realSum += d.real + inc; onlineSum += inc; hasData = true;
+      // Online NÃO entra na conta do ritmo — só é somado à parte, pra exibição.
+      metaSum += d.meta; realSum += d.real; onlineSum += onlineIncrement(it._rota, key); hasData = true;
     });
 
     const row = document.createElement('div');
     if(!hasData){
       row.className = 'row nodata';
       const label = anyUnavailable ? 'indisponível (base em manutenção)' : 'sem meta cadastrada';
-      row.innerHTML = '<div class="top"><div class="name">'+LABELS[key]+'</div><div class="pct">'+label+'</div></div>';
+      row.innerHTML = '<div class="top"><div class="name">'+LABELS[key]+'</div></div><div class="nodatatxt">'+label+'</div>';
       rowsEl.appendChild(row);
       return;
     }
@@ -424,19 +450,31 @@ function render(){
     const gap = Math.round(gapRaw);
 
     row.className = 'row ' + (onPace ? 'ok' : 'nok');
-    const fillW = Math.min(100, pct===null?0:pct);
-    const gapLabel = gap>0 ? (inv ? ('reverter '+gap.toLocaleString('pt-BR')) : ('faltam '+gap.toLocaleString('pt-BR'))) : (inv ? 'dentro do teto' : 'dentro do ritmo');
-    const onlineTag = onlineSum>0 ? ' <span style="color:#0f6e56;">(+'+onlineSum.toLocaleString('pt-BR')+' online)</span>' : '';
-    const metaLabel = inv
-      ? ('Meta útil dia '+DIA_HOJE+'/'+TOTAL_DIAS_UTEIS+': '+Math.round(metaEff).toLocaleString('pt-BR')+' <span style="color:var(--gray-light)">(cheia '+Math.round(metaSum).toLocaleString('pt-BR')+')</span> · Real '+realSum.toLocaleString('pt-BR')+onlineTag)
-      : ('Meta '+Math.round(metaEff).toLocaleString('pt-BR')+' · Real '+realSum.toLocaleString('pt-BR')+onlineTag);
-
+    const arrow = onPace ? '▲' : '▼';
+    const pctShown = pct===null ? '—' : pct;
+    const statusText = gap>0 ? (inv ? ('reverter '+gap.toLocaleString('pt-BR')) : ('faltam '+gap.toLocaleString('pt-BR')+' hoje')) : (inv ? 'dentro do teto' : 'na meta');
     const noteHtml = inv ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>' : '';
+
+    // Coluna Online: some das 13 coberturas normais; "–" para Venda Zero/Imperdoáveis (fora do escopo do online.json).
+    const onlineEligible = !(key === 'VENDAZERO' || key === 'IMPERDOAVEIS');
+    let onlineColHtml = '';
+    if(ONLINE_ACTIVE){
+      const onlineTxt = onlineEligible ? (onlineSum>0 ? ('+'+onlineSum.toLocaleString('pt-BR')) : '0') : '–';
+      const onlineCls = onlineEligible ? (onlineSum>0 ? 'onlinenum' : 'onlinenum zero') : 'onlinenum na';
+      onlineColHtml = '<div class="onlinecol"><div class="'+onlineCls+'">'+onlineTxt+'</div><div class="onlinelbl">online</div></div>';
+    }
+
+    const metaLabel = inv
+      ? ('<div class="metanum">Meta útil '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">(cheia '+Math.round(metaSum).toLocaleString('pt-BR')+')</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>')
+      : ('<div class="metanum">Meta '+Math.round(metaEff).toLocaleString('pt-BR')+'</div><div class="metanum">Real '+realSum.toLocaleString('pt-BR')+'</div>');
+
     row.innerHTML =
-      '<div class="top"><div class="name">'+LABELS[key]+noteHtml+'</div>'+
-      '<div class="pct">'+(pct===null?'—':pct)+'%</div></div>'+
-      '<div class="track"><div class="fill" style="width:'+fillW+'%"></div></div>'+
-      '<div class="bottom"><span>'+metaLabel+'</span><span class="gap">'+gapLabel+'</span></div>';
+      '<div class="top"><div class="name">'+LABELS[key]+noteHtml+'</div></div>'+
+      '<div class="cells">'+
+        '<div class="metacol">'+metaLabel+'</div>'+
+        '<div class="pctcol"><div class="pctline">'+arrow+' '+pctShown+'%</div><div class="statusline">'+statusText+'</div></div>'+
+        onlineColHtml+
+      '</div>';
     rowsEl.appendChild(row);
   });
 }
@@ -453,17 +491,14 @@ function formatOnlineTime(iso){
 }
 
 function renderPaceInfo(){
-  const threshold = ONLINE_ACTIVE ? PACE_HOJE_PCT : PACE_ONTEM_PCT;
-  if(ONLINE_ACTIVE){
-    const hora = formatOnlineTime(onlineUpdatedAt);
-    paceLine.innerHTML = 'Real <b style="color:#000;">ontem + online de hoje</b> &nbsp;·&nbsp; '+
-      '<span style="color:#0f6e56;font-weight:bold;">● Online'+(hora?(' — atualizado às '+hora):'')+'</span>'+
-      ' &nbsp;·&nbsp; <span style="color:#E4002B;font-weight:bold;">Ritmo esperado hoje, dia '+DIA_HOJE+' ➝ '+PACE_HOJE_PCT+'%</span>';
-  } else {
-    paceLine.innerHTML = 'Real até <b style="color:#000;">ontem</b>: Dia útil '+DIA_ONTEM+'/'+TOTAL_DIAS_UTEIS+' (<b style="color:#000;">'+PACE_ONTEM_PCT+'%</b>) &nbsp;·&nbsp; <span style="color:#E4002B;font-weight:bold;">Ritmo esperado hoje, dia '+DIA_HOJE+' ➝ '+PACE_HOJE_PCT+'%</span>';
-  }
-  legendPaceNote.innerHTML = 'Ritmo = % da meta cheia já atingido, comparado ao ritmo esperado ('+threshold+'%'+(ONLINE_ACTIVE?', com Online':'')+')';
+  const hora = ONLINE_ACTIVE ? formatOnlineTime(onlineUpdatedAt) : '';
+  const onlineTag = ONLINE_ACTIVE
+    ? ' &nbsp;·&nbsp; <span style="color:#0f6e56;font-weight:bold;">● Online'+(hora?(' — atualizado às '+hora):'')+'</span>'
+    : '';
+  paceLine.innerHTML = 'Real até <b style="color:#000;">ontem</b>: Dia útil '+DIA_ONTEM+'/'+TOTAL_DIAS_UTEIS+' (<b style="color:#000;">'+PACE_ONTEM_PCT+'%</b>)'+onlineTag+' &nbsp;·&nbsp; <span style="color:#E4002B;font-weight:bold;">Ritmo esperado hoje, dia '+DIA_HOJE+' ➝ '+PACE_HOJE_PCT+'%</span>';
+  legendPaceNote.innerHTML = 'Cor = ritmo até ontem ('+PACE_ONTEM_PCT+'%) · "Faltam" = alvo de hoje ('+PACE_HOJE_PCT+'%) — regra do Painel de Ritmo';
   legendVZNote.innerHTML = 'Venda Zero tem régua própria: Meta útil = Meta cheia × dias restantes/total dias (hoje: '+DIAS_RESTANTES+'/'+TOTAL_DIAS_UTEIS+')';
+  legendOnlineNote.innerHTML = ONLINE_ACTIVE ? 'Coluna "online" é só informativa — venda de hoje ainda não entra no ritmo (cor e alvo)' : '';
 }
 
 renderPaceInfo();
