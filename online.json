@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-08-12T17:07:08-03:00",
+  "updatedAt": "2026-08-12T17:35:28-03:00",
   "rotas": {
     "211": {
-      "CERVEJAS": 14,
+      "CERVEJAS": 15,
       "KS TT": 7,
       "PERFETTI TT": 3,
-      "CERVEJAS 600ML RETORNAVEL": 4,
+      "CERVEJAS 600ML RETORNAVEL": 5,
       "CAMPARI": 5,
       "POWERADE": 5,
       "APEROL": 1,
@@ -17,7 +17,7 @@
       "SKYY": 1
     },
     "212": {
-      "CERVEJAS": 11,
+      "CERVEJAS": 12,
       "CAMPARI": 2,
       "REFRI SABORES ZERO": 4,
       "PERFETTI TT": 4,
@@ -27,7 +27,8 @@
       "KS TT": 5,
       "CC 2L PET": 3,
       "POWERADE": 2,
-      "SKYY": 2
+      "SKYY": 2,
+      "CERVEJAS 600ML RETORNAVEL": 1
     },
     "213": {
       "CERVEJAS": 13,
@@ -59,13 +60,14 @@
     "215": {
       "CERVEJAS": 6,
       "KS TT": 3,
-      "CAMPARI": 6,
+      "CAMPARI": 7,
       "CC 2L PET": 6,
-      "POWERADE": 3,
+      "POWERADE": 4,
       "PERFETTI TT": 4,
       "EISENBAHN": 1,
       "REFRI SABORES ZERO": 1,
-      "KAPO": 1
+      "KAPO": 1,
+      "ARTD KO": 1
     },
     "216": {
       "REFRI SABORES ZERO": 5,
@@ -86,11 +88,11 @@
       "PERFETTI TT": 6,
       "CAMPARI": 7,
       "REFRI SABORES ZERO": 3,
+      "POWERADE": 5,
       "ARTD KO": 1,
       "APEROL": 1,
       "SKYY": 1,
       "KAPO": 1,
-      "POWERADE": 3,
       "CERVEJAS": 2,
       "EISENBAHN": 1
     },
@@ -108,10 +110,10 @@
     "222": {
       "KAPO": 8,
       "PERFETTI TT": 7,
-      "CERVEJAS": 5,
-      "EISENBAHN": 4,
+      "CERVEJAS": 6,
+      "EISENBAHN": 5,
       "CAMPARI": 5,
-      "CC 2L PET": 8,
+      "CC 2L PET": 9,
       "POWERADE": 9,
       "KS TT": 2,
       "REFRI SABORES ZERO": 3,
@@ -137,7 +139,7 @@
       "CERVEJAS": 7,
       "CAMPARI": 5,
       "REFRI SABORES ZERO": 5,
-      "KAPO": 4,
+      "KAPO": 5,
       "POWERADE": 2,
       "PERFETTI TT": 5,
       "CERVEJAS 600ML RETORNAVEL": 2,
@@ -174,16 +176,16 @@
     "227": {
       "SKYY": 1,
       "KS TT": 3,
+      "PERFETTI TT": 8,
+      "CC 2L PET": 7,
+      "KAPO": 8,
       "CERVEJAS": 7,
       "EISENBAHN": 3,
       "APEROL": 2,
       "CAMPARI": 8,
       "REFRI SABORES ZERO": 5,
-      "KAPO": 7,
       "POWERADE": 8,
       "ARTD KO": 3,
-      "PERFETTI TT": 7,
-      "CC 2L PET": 6,
       "CERVEJAS 600ML RETORNAVEL": 1
     },
     "231": {
