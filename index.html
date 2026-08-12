@@ -83,11 +83,12 @@
   .row .onlinecol.ok, .row .onlinecol.nok{border-radius:6px;padding:4px 6px;margin-left:6px;border-left:none;}
   .row .onlinecol.ok{background:var(--green-tx);}
   .row .onlinecol.nok{background:var(--red-tx);}
-  .row .onlinecol.ok .onlinenum, .row .onlinecol.ok .onlinelbl{color:var(--white);}
-  .row .onlinecol.nok .onlinenum, .row .onlinecol.nok .onlinelbl{color:var(--white);}
+  .row .onlinecol.ok .onlinenum, .row .onlinecol.ok .onlinelbl, .row .onlinecol.ok .onlinesub{color:var(--white);}
+  .row .onlinecol.nok .onlinenum, .row .onlinecol.nok .onlinelbl, .row .onlinecol.nok .onlinesub{color:var(--white);}
   .row .onlinenum{font-size:17px;font-weight:bold;color:#0f6e56;}
   .row .onlinecol.na .onlinenum{color:var(--gray-light);font-size:14px;}
   .row .onlinelbl{font-size:7.5px;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.03em;margin-top:1px;}
+  .row .onlinesub{font-size:8.5px;font-weight:bold;margin-top:2px;text-align:center;line-height:1.2;}
   .row .metanum.online-combo{font-weight:bold;opacity:1;}
   .row .metanum.online-combo.ok{color:var(--green-tx);}
   .row .metanum.online-combo.nok{color:var(--red-tx);}
@@ -182,8 +183,9 @@ function metaAjustada(key, meta){
 // Cada número é o INCREMENTO de hoje (clientes cobertos hoje que ainda
 // não contavam no Real até ontem) — não o total do dia, e sim o que
 // ainda falta somar. Rotas/indicadores ausentes valem 0.
-// Por ora o Online só vale para as 13 coberturas normais — Venda Zero e
-// Imperdoáveis têm metodologia própria e ficam de fora deste merge.
+// Cobre as 13 coberturas normais + Imperdoáveis (contagem de clientes 100%
+// completos, vinda de uma base própria do PREMIA BAND, cliente a cliente).
+// Só Venda Zero fica de fora — tem régua e sentido (decrescente) próprios.
 // ============================================================
 const ONLINE_URL = 'online.json';
 const ONLINE_REFRESH_MS = 5 * 60 * 1000; // busca de novo a cada 5 min
@@ -193,7 +195,7 @@ let onlineUpdatedAt = null;
 
 function onlineIncrement(rota, key){
   if(!ONLINE_ACTIVE || !rota) return 0;
-  if(key === 'VENDAZERO' || key === 'IMPERDOAVEIS') return 0;
+  if(key === 'VENDAZERO') return 0;
   const r = ONLINE[rota];
   if(!r) return 0;
   const v = r[key];
@@ -465,18 +467,20 @@ function render(){
       : (gap>0 ? ('faltam '+gap.toLocaleString('pt-BR')+' hoje') : 'no ritmo');
     const noteHtml = inv ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>' : '';
 
-    // Coluna Online: some das 13 coberturas normais; "–" para Venda Zero/Imperdoáveis (fora do escopo do online.json).
+    // Coluna Online: soma das 13 coberturas + Imperdoáveis; "–" só para Venda Zero (fora do escopo do online.json).
     // Meta do dia pra julgar o Online:
     //  - indicador NO RITMO (verde): meta dia = Meta do indicador / total de dias úteis (fatia média de 1 dia)
     //  - indicador FORA DO RITMO (vermelho): meta dia = "faltam X hoje" (o mesmo alvo que já cobre a recuperação)
-    const onlineEligible = !(key === 'VENDAZERO' || key === 'IMPERDOAVEIS');
+    const onlineEligible = key !== 'VENDAZERO';
     const metaDiaOnline = onPace ? (metaSum / TOTAL_DIAS_UTEIS) : gap;
-    const onlineOnPace = onlineSum >= metaDiaOnline;
+    const onlineRemaining = Math.max(0, Math.ceil(metaDiaOnline) - onlineSum);
+    const onlineOnPace = onlineRemaining <= 0;
     let onlineColHtml = '';
     if(ONLINE_ACTIVE){
       const onlineTxt = onlineEligible ? onlineSum.toLocaleString('pt-BR') : '–';
       const colCls = onlineEligible ? ('onlinecol ' + (onlineOnPace ? 'ok' : 'nok')) : 'onlinecol na';
-      onlineColHtml = '<div class="'+colCls+'"><div class="onlinenum">'+onlineTxt+'</div><div class="onlinelbl">online</div></div>';
+      const onlineSubTxt = onlineEligible ? (onlineRemaining > 0 ? ('faltam '+onlineRemaining.toLocaleString('pt-BR')+' também') : 'no ritmo') : '';
+      onlineColHtml = '<div class="'+colCls+'"><div class="onlinelbl">online</div><div class="onlinenum">'+onlineTxt+'</div>'+(onlineSubTxt?'<div class="onlinesub">'+onlineSubTxt+'</div>':'')+'</div>';
     }
 
     const diferencaValor = realSum + (ONLINE_ACTIVE ? onlineSum : 0) - metaSum;
