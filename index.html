@@ -369,8 +369,9 @@ function updateClientSearch(items){
 }
 
 function renderClientCard(c){
+  const groupKeys = GROUPS[activeGroup].items.filter(k=> COVERAGE_KEYS_13.includes(k));
   let indHtml = '';
-  COVERAGE_KEYS_13.forEach(key=>{
+  groupKeys.forEach(key=>{
     if(key === 'KS TT' && !c.kstt){
       indHtml += '<div class="clientInd na">'+LABELS[key]+'<span class="clientIndSrc">não elegível</span></div>';
       return;
@@ -385,7 +386,7 @@ function renderClientCard(c){
   });
   clientCard.innerHTML =
     '<div class="clientCardHead"><div class="clientCardName">'+c.nome+'</div>'+
-    '<div class="clientCardMeta">Cód. '+c.id+' · Rota '+c.rota+'</div></div>'+
+    '<div class="clientCardMeta">Cód. '+c.id+' · Rota '+c.rota+' · '+GROUPS[activeGroup].label+'</div></div>'+
     '<div class="clientIndicators">'+indHtml+'</div>';
   clientCard.style.display = 'block';
 }
