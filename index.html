@@ -500,6 +500,48 @@ function openSemCompraDrawer(items){
   }
   drawerOverlay.classList.add('open');
 }
+
+function openVisitasHojeDrawer(items){
+  const rows = [];
+  items.forEach(it=>{
+    const rota = it._rota;
+    const list = CLIENTES_HOJE[rota];
+    if(!list) return;
+    list.forEach(c=> rows.push({rota, id:c.id, nome:c.nome}));
+  });
+  rows.sort((a,b)=> a.nome.localeCompare(b.nome, 'pt-BR'));
+
+  const NEG_KEY_VISITA = '__VISITA__';
+  drawerTitle.innerHTML = 'Visitas do Dia';
+  drawerSub.innerHTML = rows.length + ' cliente'+(rows.length===1?'':'s')+' com visita prevista hoje (calendário + Semana 13/24)';
+
+  if(rows.length === 0){
+    drawerList.innerHTML = '<div class="drawerEmpty">Nenhum cliente com visita prevista hoje.</div>';
+  } else {
+    drawerList.innerHTML = rows.map(r=>{
+      const k = negKey(r.rota, NEG_KEY_VISITA, r.id);
+      const override = localStorage.getItem(k);
+      const autoOnline = onlineCoveredToday(r.rota, 'QUALQUER', r.id);
+      const checked = override !== null ? (override === '1') : autoOnline;
+      const rotaTag = items.length > 1 ? (' · Rota '+r.rota) : '';
+      const onlineTag = (autoOnline && override === null) ? ' <span class="onlineAutoTag">online hoje</span>' : '';
+      return '<label class="drawerItem">'+
+        '<input type="checkbox" data-k="'+k+'" '+(checked?'checked':'')+'>'+
+        '<div class="info"><div class="nome'+(checked?' done':'')+'">'+r.nome+onlineTag+'</div>'+
+        '<div class="meta2">Cód. '+r.id+rotaTag+'</div></div>'+
+      '</label>';
+    }).join('');
+    drawerList.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        const k = cb.getAttribute('data-k');
+        localStorage.setItem(k, cb.checked ? '1' : '0');
+        const nomeEl = cb.closest('.drawerItem').querySelector('.nome');
+        nomeEl.classList.toggle('done', cb.checked);
+      });
+    });
+  }
+  drawerOverlay.classList.add('open');
+}
 drawerClose.onclick = closeDrawer;
 drawerOverlay.onclick = (e)=>{ if(e.target === drawerOverlay) closeDrawer(); };
 
@@ -642,9 +684,12 @@ function render(){
   });
 
   cardsEl.innerHTML =
-    '<div class="card"><div class="num">'+baseTotal.toLocaleString('pt-BR')+'</div><div class="lbl">Base Total de Clientes</div>'+visitasHojeHtml+'</div>'+
+    '<div class="card clickable" id="baseTotalCard"><div class="num">'+baseTotal.toLocaleString('pt-BR')+'</div><div class="lbl">Base Total de Clientes</div>'+visitasHojeHtml+'</div>'+
     semCompraHtml+
     '<div class="card"><div class="num">'+onPaceCount+' / '+withDataCount+'</div><div class="lbl">Ritmo de Coberturas</div><div class="pct">dentro do ritmo</div></div>';
+
+  const baseTotalCardEl = document.getElementById('baseTotalCard');
+  if(baseTotalCardEl){ baseTotalCardEl.onclick = ()=> openVisitasHojeDrawer(items); }
 
   const semCompraCardEl = document.getElementById('semCompraCard');
   if(semCompraCardEl){ semCompraCardEl.onclick = ()=> openSemCompraDrawer(items); }
