@@ -478,11 +478,14 @@ function openSemCompraDrawer(items){
   } else {
     drawerList.innerHTML = rows.map(r=>{
       const k = negKey(r.rota, NEG_KEY_SEMCOMPRA, r.id);
-      const checked = localStorage.getItem(k) === '1';
+      const override = localStorage.getItem(k); // '1' manual, '0' manual, null = sem override
+      const autoOnline = onlineCoveredToday(r.rota, 'QUALQUER', r.id);
+      const checked = override !== null ? (override === '1') : autoOnline;
       const rotaTag = items.length > 1 ? (' · Rota '+r.rota) : '';
+      const onlineTag = (autoOnline && override === null) ? ' <span class="onlineAutoTag">online hoje</span>' : '';
       return '<label class="drawerItem">'+
         '<input type="checkbox" data-k="'+k+'" '+(checked?'checked':'')+'>'+
-        '<div class="info"><div class="nome'+(checked?' done':'')+'">'+r.nome+'</div>'+
+        '<div class="info"><div class="nome'+(checked?' done':'')+'">'+r.nome+onlineTag+'</div>'+
         '<div class="meta2">Cód. '+r.id+rotaTag+'</div></div>'+
       '</label>';
     }).join('');
