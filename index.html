@@ -777,7 +777,9 @@ function render(){
     const statusText = inv
       ? (gap>0 ? 'reverter' : 'dentro do teto')
       : (gap>0 ? ('faltam '+gap.toLocaleString('pt-BR')+' hoje') : 'no ritmo');
-    const noteHtml = inv ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>' : '';
+    const noteHtml = inv
+      ? '<span class="sub">quanto menor, melhor · teto cai conforme os dias passam</span>'
+      : (key === 'IMPERDOAVEIS' ? '<span class="sub">toque para abrir o acompanhamento detalhado ↗</span>' : '');
 
     // Oportunidades do dia: clientes com visita prevista HOJE (calendário BAND TOGO + Semana 13/24)
     // que ainda não compraram o indicador. Só faz sentido pras 13 coberturas.
@@ -819,6 +821,12 @@ function render(){
     if(oportunidades !== null){
       row.classList.add('clickable');
       row.onclick = ()=> openDrawer(key, items);
+    } else if(key === 'IMPERDOAVEIS'){
+      row.classList.add('clickable');
+      row.onclick = ()=>{
+        const rotaParam = (items.length === 1) ? ('?rota='+encodeURIComponent(items[0]._rota)) : '';
+        window.open('App_Imperdoaveis_GC_G2_Agosto.html'+rotaParam, '_blank');
+      };
     }
     rowsEl.appendChild(row);
   });
