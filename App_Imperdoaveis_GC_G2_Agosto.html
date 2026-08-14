@@ -11,6 +11,9 @@
   .topbar { background:#141413; color:#fff; padding:14px 16px; position:sticky; top:0; z-index:10; }
   .topbar .title { font-size:15px; font-weight:600; }
   .topbar .sub { font-size:12px; color:#B4B2A9; margin-top:2px; }
+  .topbar .backlink { display:inline-flex; align-items:center; gap:5px; color:#B4B2A9; font-size:12.5px;
+    text-decoration:none; margin-bottom:8px; }
+  .topbar .backlink:active { opacity:.7; }
   .wrap { max-width:480px; margin:0 auto; padding:14px; }
   .banner { background:#FCEBEB; color:#791F1F; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
   .summary { display:flex; gap:10px; margin-bottom:16px; }
@@ -74,6 +77,7 @@
 <body>
 
 <div class="topbar">
+  <a href="Desempenho_Rotas_Campo.html" class="backlink" id="backToPainel">&larr; Painel de Desempenho</a>
   <div class="title">Imperdoáveis · GC.G2</div>
   <div class="sub" id="topsub">Carregando…</div>
 </div>
@@ -373,6 +377,20 @@ function sendDailySummary() {
   const url = 'https://wa.me/556299642475?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
 }
+
+// Botão "voltar": se veio de um clique no painel principal, usa a URL real dele
+// (funciona tanto se o painel se chama Desempenho_Rotas_Campo.html quanto index.html)
+(function fixBackLink(){
+  try {
+    const back = document.getElementById('backToPainel');
+    if (document.referrer) {
+      const ref = new URL(document.referrer);
+      if (/\.html?$|\/$/i.test(ref.pathname)) {
+        back.href = document.referrer;
+      }
+    }
+  } catch (e) {}
+})();
 
 // Deep-link vindo do painel principal: ?rota=211 já abre filtrado nessa rota
 (function applyRotaFromUrl(){
