@@ -549,13 +549,30 @@ function impPool(){
 
 function impCanalStats(){
   const pool = impPool();
+  const totalClientesBase = pool.length;
+  const totalMetaIM = impItems.reduce(function(s, it){
+    const ind = it.indicators && it.indicators['IMPERDOAVEIS'];
+    return s + (ind && ind.meta ? ind.meta : 0);
+  }, 0);
+
   const map = {};
   pool.forEach(c=>{
-    if(!map[c.segmento]) map[c.segmento] = {nome:c.segmento, count:0, pendentes:0, meta:0, real:0, completos:0};
+    if(!map[c.segmento]) map[c.segmento] = {nome:c.segmento, count:0, pendentes:0, completos:0};
     const s = map[c.segmento];
-    s.count++; s.meta+=c.meta; s.real+=c.real;
+    s.count++;
     if(c.dif===0) s.completos++; else s.pendentes++;
   });
+
+  Object.values(map).forEach(function(s){
+    // Meta: fatia proporcional do Meta IM da(s) rota(s) filtrada(s), ponderada
+    // por quanto esse canal representa da base total de clientes (não é soma
+    // de agrupadores — é meta em NÚMERO DE CLIENTES, mesma unidade do Real).
+    const pctBase = totalClientesBase ? (s.count / totalClientesBase) : 0;
+    s.meta = Math.round(pctBase * totalMetaIM);
+    // Real: dado de verdade, não calculado — contagem de clientes com Dif=0.
+    s.real = s.completos;
+  });
+
   return Object.values(map).filter(function(s){ return s.pendentes > 0; }).sort((a,b)=>b.pendentes-a.pendentes);
 }
 
@@ -581,7 +598,6 @@ function renderImpCanais(){
       '<div class="imp-canal-metrics">'+
         '<div class="imp-metric"><b>'+s.meta+'</b>Meta</div>'+
         '<div class="imp-metric"><b>'+s.real+'</b>Real</div>'+
-        '<div class="imp-metric"><b>'+s.completos+'</b>100%</div>'+
         '<div class="imp-metric imp-pct '+pctCls+'" style="margin-left:auto;">'+pct+'%</div>'+
       '</div>'+
       '<div class="imp-bar-bg"><div class="imp-bar-fg" style="width:'+pct+'%"></div></div>'+
@@ -642,17 +658,18 @@ function renderImpDetail(){
   const c = impClientList[impClientIdx];
   const done = c.itens.filter(function(it){ return it.done; }).length;
   const total = c.itens.length;
+  const pendentes = c.itens.filter(function(it){ return !it.done; });
 
   drawerTitle.innerHTML = c.nome;
   drawerSub.innerHTML = '<span class="imp-back" id="impBackClients">&larr; '+impCanal+'</span> · PV '+c.pv+' · Rota '+c.rota+' · '+c.segmento+' · visita '+c.visita;
-  drawerStat.innerHTML = done+' de '+total+' itens comprados';
+  drawerStat.innerHTML = done+' de '+total+' itens comprados · '+pendentes.length+' pendente'+(pendentes.length===1?'':'s');
 
-  drawerList.innerHTML = c.itens.map(function(it){
-    return '<div class="imp-item-box '+(it.done?'ok':'pend')+'">'+
+  drawerList.innerHTML = pendentes.map(function(it){
+    return '<div class="imp-item-box pend">'+
       '<div class="imp-item-dot"></div>'+
       '<div><div class="imp-item-grp">'+it.grupo+'</div><div class="imp-item-txt">'+it.texto+'</div></div>'+
     '</div>';
-  }).join('') || '<div class="drawerEmpty">Sem agrupadores aplicáveis a esse cliente.</div>';
+  }).join('') || '<div class="drawerEmpty">Combo completo — nenhum item pendente.</div>';
 
   const backEl = document.getElementById('impBackClients');
   if(backEl) backEl.onclick = renderImpClients;
