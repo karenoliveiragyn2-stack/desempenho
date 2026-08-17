@@ -567,7 +567,7 @@ function impCanalStats(){
 
   const hojeIds = new Set();
   impItems.forEach(function(it){
-    (IMPERDOAVEIS_HOJE_CLIENTES[it._rota] || []).forEach(function(pv){ hojeIds.add(pv); });
+    (IMPERDOAVEIS_HOJE_CLIENTES[it._rota] || []).forEach(function(pv){ hojeIds.add(String(pv)); });
   });
 
   const map = {};
@@ -576,7 +576,7 @@ function impCanalStats(){
     const s = map[c.segmento];
     s.count++;
     if(c.dif===0) s.completos++; else s.pendentes++;
-    if(hojeIds.has(c.id)) s.hoje++;
+    if(hojeIds.has(String(c.pv))) s.hoje++;
   });
 
   Object.values(map).forEach(function(s){
