@@ -159,6 +159,9 @@
   .imp-item-box.ok .imp-item-grp{color:var(--green-tx);}
   .imp-item-box.pend .imp-item-grp{color:var(--red-tx);}
   .imp-item-txt{font-size:13px;line-height:1.4;}
+  .imp-daytoggle{display:inline-block;font-size:11.5px;font-weight:bold;padding:5px 12px;border-radius:20px;
+    background:var(--gray-bg);color:var(--gray-dark);cursor:pointer;margin-right:6px;}
+  .imp-daytoggle.active{background:#141413;color:var(--white);}
 
   .clientSearchBox{margin-bottom:6px;}
   .clientSearchLbl{font-size:11px;font-weight:bold;color:var(--gray-dark);margin-bottom:5px;text-transform:uppercase;letter-spacing:.02em;}
@@ -551,10 +554,21 @@ let impItems = [];
 let impCanal = null;
 let impClientList = [];
 let impClientIdx = null;
+let impDiaFiltro = 'hoje'; // 'hoje' | 'todos' -- consistente com "oportunidades do dia" dos outros indicadores
+
+function impClienteTemVisitaHoje(c){
+  const lista = CLIENTES_HOJE[c.rota];
+  if(!lista) return false;
+  return lista.some(function(x){ return String(x.id) === String(c.pv); });
+}
 
 function impPool(){
   const rotas = new Set(impItems.map(it=>it._rota));
-  return IMPERDOAVEIS_CLIENTS.filter(c => rotas.has(c.rota));
+  let pool = IMPERDOAVEIS_CLIENTS.filter(c => rotas.has(c.rota));
+  if(impDiaFiltro === 'hoje'){
+    pool = pool.filter(impClienteTemVisitaHoje);
+  }
+  return pool;
 }
 
 function impCanalStats(){
@@ -603,7 +617,11 @@ function renderImpCanais(){
   const rotaLabel = impItems.length===1 ? ('Rota '+impItems[0]._rota) : (impItems.length+' rotas');
   drawerTitle.innerHTML = 'Imperdoáveis';
   drawerSub.innerHTML = rotaLabel + ' · escolha um canal';
-  drawerStat.innerHTML = '';
+  drawerStat.innerHTML =
+    '<span class="imp-daytoggle '+(impDiaFiltro==='hoje'?'active':'')+'" id="impDiaHoje">Hoje</span>'+
+    '<span class="imp-daytoggle '+(impDiaFiltro==='todos'?'active':'')+'" id="impDiaTodos">Todos os dias</span>';
+  document.getElementById('impDiaHoje').onclick = function(){ impDiaFiltro='hoje'; renderImpCanais(); };
+  document.getElementById('impDiaTodos').onclick = function(){ impDiaFiltro='todos'; renderImpCanais(); };
 
   const canais = impCanalStats();
   drawerList.innerHTML = canais.map(function(s){
@@ -639,12 +657,12 @@ function openImpCanal(canal){
 }
 
 function renderImpClients(){
-  const rotas = new Set(impItems.map(it=>it._rota));
-  impClientList = IMPERDOAVEIS_CLIENTS.filter(function(c){ return rotas.has(c.rota) && c.segmento===impCanal && c.dif !== 0; })
+  impClientList = impPool().filter(function(c){ return c.segmento===impCanal && c.dif !== 0; })
     .slice().sort(function(a,b){ return a.n_itens - b.n_itens; });
 
   drawerTitle.innerHTML = 'Imperdoáveis · '+impCanal;
-  drawerSub.innerHTML = '<span class="imp-back" id="impBackCanais">&larr; canais</span> · '+impClientList.length+' com pendência';
+  const diaLabel = impDiaFiltro==='hoje' ? 'visita hoje' : 'todos os dias';
+  drawerSub.innerHTML = '<span class="imp-back" id="impBackCanais">&larr; canais</span> · '+impClientList.length+' com pendência · '+diaLabel;
   drawerStat.innerHTML = '';
 
   drawerList.innerHTML = impClientList.map(function(c,i){
