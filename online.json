@@ -1,10 +1,26 @@
 {
-  "updatedAt": "2026-08-18T08:07:48-03:00",
+  "updatedAt": "2026-08-18T08:49:24-03:00",
   "rotas": {
+    "112": {
+      "PERFETTI TT": 1,
+      "KS TT": 1
+    },
+    "113": {
+      "CCTM 2L PET": 2,
+      "PERFETTI TT": 1,
+      "CERVEJAS": 1,
+      "EISENBAHN": 1,
+      "KAPO": 1,
+      "POWERADE": 1
+    },
+    "115": {
+      "KS TT": 1
+    },
     "116": {
       "KAPO": 1
     },
     "121": {
+      "KS TT": 1,
       "CERVEJAS": 1,
       "POWERADE": 1
     },
@@ -47,36 +63,48 @@
       "KAPO": 1
     },
     "224": {
-      "PERFETTI TT": 2,
+      "PERFETTI TT": 3,
       "KS TT": 2,
       "KAPO": 1,
       "POWERADE": 1,
-      "REFRI SABORES ZERO": 1
+      "CERVEJAS": 1,
+      "REFRI SABORES ZERO": 2
     },
     "225": {
       "REFRI SABORES ZERO": 1,
       "POWERADE": 1
     },
     "226": {
-      "POWERADE": 1
+      "POWERADE": 1,
+      "CCTM 2L PET": 1
     },
     "227": {
       "KS TT": 3
     },
     "311": {
+      "KS TT": 2,
       "POWERADE": 1
     },
     "312": {
       "CERVEJAS": 2,
-      "CC 2L PET": 1,
+      "CCTM 2L PET": 1,
       "EISENBAHN": 1
     },
+    "313": {
+      "KS TT": 1,
+      "ARTD KO": 1,
+      "CERVEJAS": 1,
+      "EISENBAHN": 1,
+      "CCTM 2L PET": 1,
+      "REFRI SABORES ZERO": 1,
+      "POWERADE": 1
+    },
     "314": {
-      "PERFETTI TT": 1,
-      "CC 2L PET": 1
+      "CCTM 2L PET": 2,
+      "PERFETTI TT": 1
     },
     "316": {
-      "CC 2L PET": 1,
+      "CCTM 2L PET": 1,
       "REFRI SABORES ZERO": 1
     },
     "322": {
@@ -96,7 +124,7 @@
       "REFRI SABORES ZERO": 1,
       "CERVEJAS": 1,
       "EISENBAHN": 1,
-      "CC 2L PET": 1,
+      "CCTM 2L PET": 1,
       "KAPO": 1
     },
     "511": {
@@ -112,7 +140,7 @@
     "525": {
       "ARTD KO": 3,
       "APEROL": 1,
-      "CC 2L PET": 1,
+      "CCTM 2L PET": 1,
       "CERVEJAS": 1,
       "EISENBAHN": 1,
       "POWERADE": 1
@@ -125,7 +153,7 @@
       "CERVEJAS": 1,
       "CERVEJAS 600ML RETORNAVEL": 1,
       "EISENBAHN": 1,
-      "CC 2L PET": 2,
+      "CCTM 2L PET": 2,
       "REFRI SABORES ZERO": 1,
       "KAPO": 1
     },
@@ -146,7 +174,7 @@
       "REFRI SABORES ZERO": 2
     },
     "536": {
-      "CC 2L PET": 1
+      "CCTM 2L PET": 1
     },
     "537": {
       "POWERADE": 1,
@@ -167,12 +195,54 @@
     },
     "112": {
       "QUALQUER": [
+        "1151734",
         "1217750"
+      ],
+      "PERFETTI TT": [
+        "1151734"
+      ],
+      "KS TT": [
+        "1151734"
+      ]
+    },
+    "113": {
+      "QUALQUER": [
+        "1075206",
+        "1208603",
+        "1217789"
+      ],
+      "CCTM 2L PET": [
+        "1208603",
+        "1217789"
+      ],
+      "PERFETTI TT": [
+        "1217789"
+      ],
+      "CERVEJAS": [
+        "1217789"
+      ],
+      "EISENBAHN": [
+        "1217789"
+      ],
+      "KAPO": [
+        "1217789"
+      ],
+      "POWERADE": [
+        "1217789"
       ]
     },
     "114": {
       "QUALQUER": [
         "1221345"
+      ]
+    },
+    "115": {
+      "QUALQUER": [
+        "1207676",
+        "1216128"
+      ],
+      "KS TT": [
+        "1207676"
       ]
     },
     "116": {
@@ -185,7 +255,11 @@
     },
     "121": {
       "QUALQUER": [
+        "1007099",
         "1184111"
+      ],
+      "KS TT": [
+        "1007099"
       ],
       "CERVEJAS": [
         "1184111"
@@ -259,6 +333,7 @@
       "QUALQUER": [
         "1085599",
         "1153509",
+        "1217209",
         "1220690"
       ],
       "REFRI SABORES ZERO": [
@@ -330,10 +405,12 @@
       "QUALQUER": [
         "1045089",
         "1180540",
+        "1202467",
         "1216234"
       ],
       "PERFETTI TT": [
         "1045089",
+        "1202467",
         "1216234"
       ],
       "KS TT": [
@@ -346,7 +423,11 @@
       "POWERADE": [
         "1045089"
       ],
+      "CERVEJAS": [
+        "1202467"
+      ],
       "REFRI SABORES ZERO": [
+        "1202467",
         "1216234"
       ]
     },
@@ -363,10 +444,14 @@
     },
     "226": {
       "QUALQUER": [
-        "1213458"
+        "1213458",
+        "1217794"
       ],
       "POWERADE": [
         "1213458"
+      ],
+      "CCTM 2L PET": [
+        "1217794"
       ]
     },
     "227": {
@@ -385,8 +470,14 @@
     "311": {
       "QUALQUER": [
         "1064950",
+        "1182843",
         "1183977",
+        "1191511",
         "1225033"
+      ],
+      "KS TT": [
+        "1182843",
+        "1191511"
       ],
       "POWERADE": [
         "1183977"
@@ -403,31 +494,61 @@
         "1066420",
         "1183678"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1066420"
       ],
       "EISENBAHN": [
         "1183678"
       ]
     },
+    "313": {
+      "QUALQUER": [
+        "1166003",
+        "1186159"
+      ],
+      "KS TT": [
+        "1166003"
+      ],
+      "ARTD KO": [
+        "1186159"
+      ],
+      "CERVEJAS": [
+        "1186159"
+      ],
+      "EISENBAHN": [
+        "1186159"
+      ],
+      "CCTM 2L PET": [
+        "1186159"
+      ],
+      "REFRI SABORES ZERO": [
+        "1186159"
+      ],
+      "POWERADE": [
+        "1186159"
+      ]
+    },
     "314": {
       "QUALQUER": [
         "1097807",
+        "1101466",
         "1208501",
         "1225009"
       ],
-      "PERFETTI TT": [
+      "CCTM 2L PET": [
+        "1101466",
         "1208501"
       ],
-      "CC 2L PET": [
+      "PERFETTI TT": [
         "1208501"
       ]
     },
     "316": {
       "QUALQUER": [
+        "1174141",
         "1216727"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1216727"
       ],
       "REFRI SABORES ZERO": [
@@ -485,7 +606,7 @@
       "EISENBAHN": [
         "1217287"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1217287"
       ],
       "KAPO": [
@@ -494,13 +615,20 @@
     },
     "511": {
       "QUALQUER": [
-        "1152278"
+        "1152278",
+        "1185674",
+        "1205278"
       ],
       "REFRI SABORES ZERO": [
         "1152278"
       ],
       "KAPO": [
         "1152278"
+      ]
+    },
+    "515": {
+      "QUALQUER": [
+        "1169030"
       ]
     },
     "522": {
@@ -550,7 +678,7 @@
       "APEROL": [
         "1166441"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1166441"
       ],
       "CERVEJAS": [
@@ -592,7 +720,7 @@
       "EISENBAHN": [
         "1161711"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1161711",
         "1209285"
       ],
@@ -659,7 +787,7 @@
         "1148887",
         "1173479"
       ],
-      "CC 2L PET": [
+      "CCTM 2L PET": [
         "1173479"
       ]
     },
@@ -698,6 +826,7 @@
         "1205480",
         "1205614",
         "1206702",
+        "1218139",
         "1223146",
         "1223188",
         "1223295",
