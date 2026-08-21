@@ -608,27 +608,49 @@ function impCanalStats(){
   return Object.values(map).filter(function(s){ return s.pendentes > 0; }).sort((a,b)=>b.pendentes-a.pendentes);
 }
 
+let vzDiaFiltro = 'hoje'; // 'hoje' | 'todos' -- mesmo padrão do Imperdoáveis
+let vzItems = [];
+
+function vzClienteTemVisitaHoje(rota, pv){
+  const lista = CLIENTES_HOJE[rota];
+  if(!lista) return false;
+  return lista.some(function(x){ return String(x.id) === String(pv); });
+}
+
 function openVendaZeroDrawer(items){
-  const rotas = new Set(items.map(it=>it._rota));
+  vzItems = items;
+  renderVendaZeroDrawer();
+  drawerOverlay.classList.add('open');
+}
+
+function renderVendaZeroDrawer(){
+  const rotas = new Set(vzItems.map(it=>it._rota));
   let rows = [];
   rotas.forEach(function(rota){
     (VENDAZERO_CLIENTES[rota] || []).forEach(function(c){
       rows.push(Object.assign({rota: rota}, c));
     });
   });
+  if(vzDiaFiltro === 'hoje'){
+    rows = rows.filter(function(r){ return vzClienteTemVisitaHoje(r.rota, r.pv); });
+  }
   rows.sort(function(a,b){ return (b.vdz||0) - (a.vdz||0); });
 
   const totalEquip = rows.reduce(function(s,r){ return s + (r.vdz||0); }, 0);
 
   drawerTitle.innerHTML = 'Venda Zero';
   drawerSub.innerHTML = totalEquip + ' equipamento'+(totalEquip===1?'':'s')+' TOTAL KO em Giro Zero · '+rows.length+' cliente'+(rows.length===1?'':'s');
-  drawerStat.innerHTML = '';
+  drawerStat.innerHTML =
+    '<span class="imp-daytoggle '+(vzDiaFiltro==='hoje'?'active':'')+'" id="vzDiaHoje">Visita hoje</span>'+
+    '<span class="imp-daytoggle '+(vzDiaFiltro==='todos'?'active':'')+'" id="vzDiaTodos">Todos os dias</span>';
+  document.getElementById('vzDiaHoje').onclick = function(){ vzDiaFiltro='hoje'; renderVendaZeroDrawer(); };
+  document.getElementById('vzDiaTodos').onclick = function(){ vzDiaFiltro='todos'; renderVendaZeroDrawer(); };
 
   if(rows.length === 0){
     drawerList.innerHTML = '<div class="drawerEmpty">Nenhum equipamento Giro Zero nessa seleção.</div>';
   } else {
     drawerList.innerHTML = rows.map(function(r){
-      const rotaTag = items.length > 1 ? (' · Rota '+r.rota) : '';
+      const rotaTag = vzItems.length > 1 ? (' · Rota '+r.rota) : '';
       return '<div class="imp-client-card" style="cursor:default;">'+
         '<div class="imp-canal-top"><div><div class="imp-client-name">'+(r.nome||'(sem nome)')+'</div>'+
         '<div class="imp-client-meta">PV '+r.pv+rotaTag+' · '+r.tipo+' · visita '+(r.dia||'—')+'</div></div>'+
@@ -636,7 +658,6 @@ function openVendaZeroDrawer(items){
       '</div>';
     }).join('');
   }
-  drawerOverlay.classList.add('open');
 }
 
 function openImperdoaveisDrawer(items){
@@ -1037,7 +1058,7 @@ function render(){
     } else if(ONLINE_ACTIVE){
       const onlineTxt = onlineEligible ? onlineSum.toLocaleString('pt-BR') : '–';
       const boxCls = onlineEligible ? ('onlinebox ' + (onlineOnPace ? 'ok' : 'nok')) : 'onlinebox na';
-      const onlineSubTxt = onlineEligible ? (onlineRemaining > 0 ? ('faltam '+onlineRemaining.toLocaleString('pt-BR')) : 'no ritmo') : '';
+      const onlineSubTxt = onlineEligible ? (onlineRemaining > 0 ? ('meta do dia '+Math.ceil(metaDiaOnline).toLocaleString('pt-BR')) : 'no ritmo') : '';
       onlineColHtml = '<div class="onlinecol"><div class="onlinelbl">online</div><div class="'+boxCls+'"><div class="onlinenum">'+onlineTxt+'</div>'+(onlineSubTxt?'<div class="onlinesub">'+onlineSubTxt+'</div>':'')+'</div></div>';
     }
 
