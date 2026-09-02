@@ -364,8 +364,8 @@ function linha(k, b, rotas){
           <div class="dif" style="color:${dif<=0?'var(--verde)':'var(--vermelho2)'}">Diferença ${dif>0?'+':''}${dif.toLocaleString('pt-BR',{maximumFractionDigits:1})}</div>
         </div>
         <div class="cm">
-          <div class="big"><span class="seta">${bom?'▲':'▼'}</span>${b.pct==null?'—':b.pct+'%'}</div>
-          <div class="acao">${b.gap>0? `faltam reverter ${b.gap}` : 'no ritmo'}</div>
+          <div class="big"><span class="seta">${bom?'▲':'▼'}</span>${bom? '' : b.gap}</div>
+          <div class="acao">${bom? 'no ritmo' : 'para reverter'}</div>
           <div class="opo">revertidos hoje ${revHoje}</div>
         </div>
         <div class="cr"><div class="olab">Online</div>${caixaOnline(k, rotas, b)}</div>
@@ -474,7 +474,7 @@ function abreIndicador(k, rotas){
       $('dCorpo').querySelectorAll('.dchip').forEach(el=>el.onclick=()=>{chip=el.dataset.d;pinta();});
     };
     const revHoje = rotas.reduce((a,r)=>a+((REVERTIDO_HOJE||{})[r]||0),0);
-    abre(LABELS[k]||k, `Meta ${b.meta.toLocaleString('pt-BR',{maximumFractionDigits:1})} · Real ${b.real} · ${revHoje} revertidos hoje`, '');
+    abre(LABELS[k]||k, `${b.real} equipamentos zerados · ${b.gap>0? `${b.gap} para reverter` : 'no ritmo'} · ${revHoje} revertidos hoje`, '');
     pinta();
     return;
   }
