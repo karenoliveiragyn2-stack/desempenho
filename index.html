@@ -77,6 +77,17 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 
 /* ---------- busca ---------- */
 .busca{background:#fff;border:1px solid var(--linha);border-radius:11px;padding:11px;margin-bottom:12px}
+.buscaWrap{position:relative}
+.sugestoes{position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;
+  border:1px solid var(--linha);border-radius:10px;max-height:280px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;z-index:60;box-shadow:0 10px 24px rgba(0,0,0,.14);display:none}
+.sugestoes.on{display:block}
+.sugItem{padding:10px 12px;font-size:13.5px;border-bottom:1px solid var(--linha);cursor:pointer;
+  display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.sugItem:last-child{border-bottom:none}
+.sugItem:active{background:var(--papel)}
+.sugItem .nm{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugItem .meta{color:var(--cinza);font-size:11px;flex:none}
 .busca input{width:100%;border:1px solid var(--linha);border-radius:8px;padding:9px 10px;font-size:14px;
   font-family:inherit}
 .cli{margin-top:11px;border-top:1px solid var(--linha);padding-top:10px}
@@ -141,6 +152,13 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 .item .nm{font-size:13.5px;font-weight:600}
 .item .sb{font-size:11.5px;color:var(--cinza);margin-top:1px}
 .item .bd{font-size:11px;color:var(--cinza);flex:none;text-align:right}
+.item.riscado{opacity:.72}
+.item.riscado .nm{text-decoration:line-through;color:var(--cinza)}
+.tagOnline{display:inline-block;margin-left:6px;font-size:9px;font-weight:750;text-decoration:none;
+  color:var(--verdeE);background:var(--menta);border-radius:6px;padding:1px 6px;vertical-align:middle;
+  text-transform:uppercase;letter-spacing:.02em}
+.tagVZ{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:750;color:#fff;
+  background:var(--vermelho);border-radius:7px;padding:2px 8px;vertical-align:middle}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px}
 .dchip{flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--linha);background:#fff;
   font-size:12px;cursor:pointer;font-family:inherit}
@@ -184,8 +202,10 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
   <div id="puxa"></div>
 
   <div class="busca">
-    <input id="q" list="dl" placeholder="Buscar cliente por nome ou código" autocomplete="off">
-    <datalist id="dl"></datalist>
+    <div class="buscaWrap">
+      <input id="q" placeholder="Buscar cliente por nome ou código" autocomplete="off">
+      <div id="qSugestoes" class="sugestoes"></div>
+    </div>
     <div id="cli"></div>
   </div>
 
@@ -442,8 +462,11 @@ function listaClientes(rotas, filtro){
   rotas.forEach(r=>(CLIENTES_HOJE[r]||[]).forEach(c=>{ if(!filtro||filtro(c)) out.push([r,c]); }));
   return out.sort((a,b)=>a[1][1].localeCompare(b[1][1]));
 }
-function itemHtml(r,c,extra){
-  return `<div class="item"><div><div class="nm">${c[1]}</div>
+function onlineIds(r, k){
+  return ((ONLINE && ONLINE.clientes || {})[r] || {})[k || 'QUALQUER'] || [];
+}
+function itemHtml(r,c,extra,online){
+  return `<div class="item ${online?'riscado':''}"><div><div class="nm">${c[1]}${online?' <span class="tagOnline">Venda Online</span>':''}</div>
     <div class="sb">${SEGS[c[2]]||'—'} · rota ${r} · ${DIAS[c[3]]||'sem agenda'}</div></div>
     <div class="bd">${extra||('PV '+c[0])}</div></div>`;
 }
@@ -452,7 +475,7 @@ $('cBase').onclick=()=>{
   const rotas = sel.rota?[sel.rota]:rotasDe(sel.gc,sel.sv);
   const l = listaClientes(rotas);
   abre('Visitas de hoje', `${l.length} clientes · ${P.DIA_SEMANA}, semana N°${P.SEMANA_NUM} (${P.SEMANA_TIPO})`,
-    l.length? l.map(([r,c])=>itemHtml(r,c)).join('') : `<div class="vazio">Nenhuma visita agendada.</div>`);
+    l.length? l.map(([r,c])=>itemHtml(r,c,null,onlineIds(r).includes(c[0]))).join('') : `<div class="vazio">Nenhuma visita agendada.</div>`);
 };
 $('cSem').onclick=()=>{
   const rotas = sel.rota?[sel.rota]:rotasDe(sel.gc,sel.sv);
@@ -468,7 +491,7 @@ $('cSem').onclick=()=>{
   out.sort((a,b)=>a[1][1].localeCompare(b[1][1]));
   const vis = rotas.reduce((a,r)=>a+(VISITAS_DIA.geral[r]||0),0);
   abre('Sem compra hoje', `${out.length} de ${vis} clientes agendados · nenhum faturamento no mês`,
-    out.length? out.map(([r,c])=>itemHtml(r,c)).join('') : `<div class="vazio">Todo mundo já comprou.</div>`);
+    out.length? out.map(([r,c])=>itemHtml(r,c,null,onlineIds(r).includes(c[0]))).join('') : `<div class="vazio">Todo mundo já comprou.</div>`);
 };
 
 function abreIndicador(k, rotas){
@@ -515,7 +538,7 @@ function abreIndicador(k, rotas){
     }).sort((a,b)=>a[1][1].localeCompare(b[1][1]));
     $('dCorpo').innerHTML =
       `<div class="chips">${DIAS_CHIP.map(d=>`<button class="dchip ${d===chip?'on':''}" data-d="${d}">${d}</button>`).join('')}</div>`+
-      (vis.length? vis.slice(0,400).map(([r,c])=>itemHtml(r,c)).join('')
+      (vis.length? vis.slice(0,400).map(([r,c])=>itemHtml(r,c,null,onlineIds(r,k).includes(c[0]))).join('')
                  : `<div class="vazio">Ninguém neste filtro.</div>`) +
       (vis.length>400? `<div class="vazio">+ ${vis.length-400} clientes — filtre por rota para ver todos.</div>`:'');
     $('dCorpo').querySelectorAll('.dchip').forEach(el=>el.onclick=()=>{chip=el.dataset.d;pinta();});
@@ -526,11 +549,48 @@ function abreIndicador(k, rotas){
 }
 
 /* ---------- busca de cliente ---------- */
+let ULTIMA_BUSCA = [];   // [ [rota, cliente], ... ] da sugestão mostrada agora
+
 function montaDatalist(rotas){
-  const opts=[];
-  rotas.forEach(r=>(CLIENT_ROSTER[r]||[]).forEach(c=>opts.push(`<option value="${c[0]} — ${c[1]}">`)));
-  $('dl').innerHTML = opts.slice(0,1200).join('');
+  // mantido só pra fechar a lista quando o filtro de rota/sv/gc muda
+  $('qSugestoes').classList.remove('on');
 }
+
+function buscaSugestoes(){
+  const v = $('q').value.trim().toLowerCase();
+  const box = $('qSugestoes');
+  if(!v){ box.classList.remove('on'); box.innerHTML=''; ULTIMA_BUSCA=[]; return; }
+  const rotas = sel.rota?[sel.rota]:rotasDe(sel.gc,sel.sv);
+  const out = [];
+  for(const r of rotas){
+    for(const c of (CLIENT_ROSTER[r]||[])){
+      if(c[1].toLowerCase().includes(v) || String(c[0]).includes(v)){
+        out.push([r,c]);
+        if(out.length>=8) break;
+      }
+    }
+    if(out.length>=8) break;
+  }
+  ULTIMA_BUSCA = out;
+  if(!out.length){ box.classList.remove('on'); box.innerHTML=''; return; }
+  box.innerHTML = out.map(([r,c],i)=>
+    `<div class="sugItem" data-i="${i}"><span class="nm">${c[1]}</span>
+      <span class="meta">PV ${c[0]} · rota ${r}</span></div>`
+  ).join('');
+  box.classList.add('on');
+  box.querySelectorAll('.sugItem').forEach(el=>el.onclick=()=>{
+    const [r,c] = ULTIMA_BUSCA[Number(el.dataset.i)];
+    $('q').value = `${c[0]} — ${c[1]}`;
+    box.classList.remove('on');
+    buscaCliente();
+  });
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.buscaWrap')) $('qSugestoes').classList.remove('on');
+});
+document.addEventListener('focusin', e=>{
+  if(e.target.id==='q' && ULTIMA_BUSCA.length) $('qSugestoes').classList.add('on');
+});
 function buscaCliente(){
   const v=$('q').value.trim(); if(!v){$('cli').innerHTML='';return;}
   const id=parseInt(v,10);
@@ -555,7 +615,11 @@ function buscaCliente(){
     return `<div class="tile ${ok?'ok':'no'}"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
       <div class="e">${ok?'real':'sem compra'}</div></div>`;
   }).join('');
-  $('cli').innerHTML = `<div class="cli"><h3>${achado[1]}</h3>
+  const vzEntries = (VENDAZERO_CLIENTES[rota]||[]).filter(e=>e.pv===achado[0]);
+  const vzTotal = vzEntries.reduce((s,e)=>s+e.vdz,0);
+  const tagVZ = vzTotal>0
+    ? `<span class="tagVZ">Venda Zero · ${vzTotal} geladeira${vzTotal>1?'s':''}</span>` : '';
+  $('cli').innerHTML = `<div class="cli"><h3>${achado[1]}${tagVZ}</h3>
     <div class="meta">PV ${achado[0]} · ${SEGS[achado[2]]||'—'} · rota ${rota} · visita ${DIAS[achado[3]]||'—'}</div>
     <div class="painel">
       <div class="grid13">${chips}</div>
@@ -563,7 +627,7 @@ function buscaCliente(){
       <div class="semim">Sem dado de Imperdoáveis pra essa rota.</div>
     </div></div>`;
 }
-$('q').oninput = buscaCliente;
+$('q').oninput = () => { buscaSugestoes(); buscaCliente(); };
 
 /* ---------- online.json ---------- */
 async function puxaOnline(){
