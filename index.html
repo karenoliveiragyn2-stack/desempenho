@@ -231,7 +231,11 @@ const COV = [...new Set(GROUPS.ICS_GC.concat(GROUPS.NOVOS_NEG))].filter(k=>k!=='
 let ONLINE = null, aba='ICS_GC';
 
 function tagAtualizado(){
-  return ` <span class="tagUpd"><span class="pt"></span>Fechamento 16/09</span>`;
+  // O horário mora no online.json (campo updatedAt), nunca embutido no HTML
+  // -- reflete o Apêndice do último arquivo de venda recebido no dia.
+  if(!ONLINE || !ONLINE.updatedAt) return '';
+  const hhmm = ONLINE.updatedAt.slice(11,16);
+  return ` <span class="tagUpd"><span class="pt"></span>Atualizado hoje ${hhmm}</span>`;
 }
 let sel = {gc:P.GC_ATIVAS[0], sv:'', rota:''};
 
