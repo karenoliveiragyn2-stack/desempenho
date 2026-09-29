@@ -169,6 +169,88 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 .rodape{text-align:center;font-size:11px;color:var(--cinza);padding:20px 10px 0;line-height:1.6}
 .creditos{margin-top:12px;padding-top:10px;border-top:1px solid var(--linha);font-size:10px;color:#b5b5ba;line-height:1.6}
 :focus-visible{outline:2px solid var(--vermelho);outline-offset:2px}
+/* ---------- resumo de vendas (botão no fim da consulta) ---------- */
+.rsBox{background:var(--carvao);border-radius:13px;padding:12px;margin:6px 0 4px;display:flex;flex-direction:column;gap:9px}
+.rsBox .rsLbl{font-size:10.5px;letter-spacing:.09em;color:#9d9da3;text-transform:uppercase}
+.rsChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.rsChips button{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #33333a;border-radius:10px;padding:10px 4px;
+  background:#232326;color:#e4e4e8;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.rsChips button::before{content:"";width:11px;height:11px;border-radius:3px;border:2px solid #7a7a82;flex:none}
+.rsChips button[aria-pressed="true"]{background:#fff;color:#0a0a0a;border-color:#fff}
+.rsChips button[aria-pressed="true"]::before{background:var(--vermelho);border-color:var(--vermelho)}
+#btnResumo{font:inherit;font-size:15px;font-weight:750;background:var(--vermelho);color:#fff;border:0;border-radius:11px;padding:13px;cursor:pointer}
+body.rs-travado{overflow:hidden}
+#rsOverlay{position:fixed;inset:0;z-index:80;background:var(--papel);overflow:auto;-webkit-overflow-scrolling:touch}
+.rs-barra{position:sticky;top:0;z-index:2;background:var(--preto);color:#fff;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:0 2px 14px rgba(0,0,0,.28)}
+.rs-barra .rsChips{flex:1 1 300px}
+.rs-barra .rsChips button{padding:8px 4px}
+.rs-btn{font:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:9px 12px;cursor:pointer;border:1px solid #33333a;background:#232326;color:#fff;white-space:nowrap}
+.rs-btn.rs-pri{background:var(--vermelho);border-color:var(--vermelho)}
+.rs-btn:disabled{opacity:.6;cursor:wait}
+.rs-acoes{display:flex;gap:8px;flex-wrap:wrap}
+#rsToast{flex-basis:100%;font-size:12px;color:#c7c7cc;min-height:0}
+#rsToast:empty{display:none}
+.rs-corpo{padding:12px}
+.rs-box{overflow-x:auto;border-radius:12px;box-shadow:0 2px 14px rgba(0,0,0,.12);background:#fff}
+#rsFolha{background:#fff;color:#141416;padding:16px 16px 12px;display:flex;flex-direction:column;gap:14px;min-width:min(100%,380px)}
+.rs-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;border-bottom:2px solid #141416;padding-bottom:10px}
+.rs-marca{display:flex;align-items:center;gap:7px;font-weight:800;font-size:10.5px;letter-spacing:.14em;color:#141416}
+.rs-marca img{width:10.5px;height:19px;object-fit:contain;filter:invert(1)}
+.rs-cab h2{font-family:var(--serif);font-size:21px;margin:6px 0 0;line-height:1.15}
+.rs-sub{font-size:12.5px;color:#7a7a82}
+.rs-tags{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.rs-tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap}
+.rs-tag-on{background:var(--verde);color:#fff} .rs-tag-off{background:var(--ruim);color:#fff} .rs-tag-rit{background:#F2F2F2;color:#141416}
+.rs-atencao{background:#fff1d6;color:#b86e00;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:6px}
+.rs-bloco h3{font-family:var(--serif);font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.rs-bloco h3 small{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;letter-spacing:0;text-transform:none;font-weight:400;color:#7a7a82;font-size:11.5px}
+#rsFolha table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+#rsFolha th,#rsFolha td{padding:5px 4px;border-bottom:1px solid #e6e6ea;text-align:center;vertical-align:middle}
+#rsFolha thead th{font-size:11.5px;font-weight:800;background:#F2F2F2}
+#rsFolha thead th.rs-foco{background:#141416;color:#fff}
+#rsFolha .rs-nome{text-align:left;font-size:12.5px;font-weight:700;white-space:nowrap;padding-left:6px}
+.rs-cel{display:flex;flex-direction:column;align-items:center;gap:1px}
+.rs-par{display:grid;grid-template-columns:auto auto;gap:4px;justify-content:center}
+.rs-k{display:flex;flex-direction:column;align-items:center;padding:3px 7px;border-radius:6px;min-width:44px;background:#F2F2F2}
+.rs-k small{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7a7a82;line-height:1.1;white-space:nowrap}
+.rs-k strong{font-size:17px;font-weight:800;line-height:1.15;color:#141416;white-space:nowrap}
+.rs-k.rs-on.rs-ok{background:var(--verde)} .rs-k.rs-on.rs-bad{background:var(--ruim)}
+.rs-k.rs-on small,.rs-k.rs-on strong{color:#fff}
+.rs-k.rs-meta0 strong{color:var(--verde)}
+.rs-sec{font-size:10px;color:#7a7a82;white-space:nowrap;margin-top:2px}
+.rs-ok{color:var(--verde)} .rs-bad{color:var(--ruim)}
+.rs-k.rs-on.rs-ok,.rs-k.rs-on.rs-bad{color:#fff}
+#rsFolha tr.rs-tot td{background:#fafafa;font-size:12px;font-weight:800}
+.rs-compacto .rs-k{min-width:34px;padding:2px 4px} .rs-compacto .rs-k strong{font-size:13.5px} .rs-compacto .rs-k small{font-size:8px} .rs-compacto .rs-sec{font-size:9px}
+#rsFolha.rs-compacto thead th{font-size:10.5px}
+.rs-rod{border-top:1px solid #e6e6ea;padding-top:7px;font-size:10px;color:#b5b5ba;text-align:center}
+/* tela cheia no PC/notebook */
+@media (min-width:1000px){
+  .rs-barra{padding:12px 28px}
+  .rs-barra .rsChips{flex:0 1 520px}
+  .rs-corpo{padding:18px 28px 32px}
+  #rsFolha{padding:22px 28px 14px;gap:18px}
+  .rs-cab h2{font-size:28px} .rs-sub{font-size:14px} .rs-tag{font-size:13px;padding:4px 10px} .rs-atencao{font-size:14px}
+  .rs-bloco h3{font-size:15px} .rs-bloco h3 small{font-size:12.5px}
+  #rsFolha th,#rsFolha td{padding:7px 6px}
+  #rsFolha thead th{font-size:14px} #rsFolha .rs-nome{font-size:15px;padding-left:10px}
+  .rs-k{min-width:62px;padding:4px 10px} .rs-k small{font-size:10.5px} .rs-k strong{font-size:23px}
+  .rs-par{gap:6px} .rs-sec{font-size:12px}
+  .rs-compacto .rs-k{min-width:46px;padding:3px 6px} .rs-compacto .rs-k strong{font-size:17px} .rs-compacto .rs-k small{font-size:9px} .rs-compacto .rs-sec{font-size:10.5px}
+  #rsFolha.rs-compacto thead th{font-size:12.5px} #rsFolha.rs-compacto .rs-nome{font-size:13px}
+}
+@media (min-width:1000px) and (max-width:1599px){
+  #rsFolha{padding:18px 18px 12px}
+  #rsFolha.rs-compacto th,#rsFolha.rs-compacto td{padding:5px 2px}
+  #rsFolha.rs-compacto .rs-nome{font-size:12.5px;padding-left:6px}
+  .rs-compacto .rs-par{gap:3px}
+  .rs-compacto .rs-k{min-width:0;padding:2px 5px} .rs-compacto .rs-k strong{font-size:15px} .rs-compacto .rs-k small{font-size:8.5px}
+  .rs-compacto .rs-sec{font-size:9.5px}
+}
+@media (min-width:1600px){
+  .rs-k strong{font-size:27px} .rs-k small{font-size:11.5px} .rs-sec{font-size:13px} #rsFolha .rs-nome{font-size:16px}
+  .rs-compacto .rs-k strong{font-size:20px}
+}
 </style>
 </head>
 <body>
@@ -214,7 +296,34 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 
   <div id="lista"></div>
 
+  <div class="rsBox">
+    <div class="rsLbl">Resumo de vendas · incluir</div>
+    <div class="rsChips" role="group" aria-label="Blocos do resumo">
+      <button data-rsb="vol" aria-pressed="true">Volume</button>
+      <button data-rsb="ics" aria-pressed="true">ICS GC</button>
+      <button data-rsb="nov" aria-pressed="false">Novos Neg.</button>
+    </div>
+    <button id="btnResumo">Gerar resumo de vendas</button>
+  </div>
+
   <div class="rodape" id="rodape"></div>
+</div>
+
+<div id="rsOverlay" hidden>
+  <div class="rs-barra">
+    <button class="rs-btn" id="rsVoltar">← Voltar</button>
+    <div class="rsChips" role="group" aria-label="Blocos do resumo">
+      <button data-rsb="vol" aria-pressed="true">Volume</button>
+      <button data-rsb="ics" aria-pressed="true">ICS GC</button>
+      <button data-rsb="nov" aria-pressed="false">Novos Neg.</button>
+    </div>
+    <div class="rs-acoes">
+      <button class="rs-btn rs-pri" id="rsLink">Compartilhar link</button>
+      <button class="rs-btn" id="rsImg">Baixar imagem</button>
+    </div>
+    <div id="rsToast" role="status"></div>
+  </div>
+  <div class="rs-corpo"><div class="rs-box"><div id="rsFolha"></div></div></div>
 </div>
 
 <div class="back" id="back"></div>
@@ -225,11 +334,12 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 </div>
 
 <script>
+// 21/09/26: o dado nao vem mais embutido -- iniciar() busca payload.json (cache:no-store)
 let P = null;
 let DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,REVERTIDO_HOJE,OPORTUNIDADE_HOJE;
 const INVERTED = new Set(['VENDAZERO']);
 const KSTT_SEG = new Set(['LANCHONETE','RESTAURANTE','BOTECO','PADARIAS']);
-let COV;
+let COV = [];
 
 let ONLINE = null, aba='ICS_GC';
 
@@ -369,7 +479,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 
 /* ---------- render ---------- */
 function render(){
-  if(!P) return;   // ainda carregando payload.json -- iniciar() chama render() de novo quando estiver pronto
+  if(!P) return;
   montaFiltros();
   const rotas = sel.rota ? [sel.rota] : rotasDe(sel.gc, sel.sv);
   const {ind, tot} = agrega(rotas);
@@ -412,6 +522,7 @@ function render(){
     (tot.compraram!=null? `${tot.compraram.toLocaleString('pt-BR')} de ${tot.baseTotal.toLocaleString('pt-BR')} clientes já compraram no mês<br>`:'')+
     `<span id="rodapeStatus">${(statusAtualizado()||{}).texto || 'sem dados de venda online neste export'}</span>`+
     `<div class="creditos">Desenvolvido por Karen Oliveira<br>Analista de Inteligência de Vendas – Matriz G2</div>`;
+  RS.pinta();
 }
 
 function piorSv(){
@@ -741,24 +852,6 @@ function buscaCliente(){
 }
 $('q').oninput = () => { buscaSugestoes(); buscaCliente(); };
 
-/* ---------- payload.json (dado do dia -- so muda quando ha atualizacao de dado) ---------- */
-async function iniciar(){
-  try{
-    const r = await fetch('payload.json?t='+Date.now(), {cache:'no-store'});
-    P = await r.json();
-  }catch(e){
-    document.body.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#9c1c1c">'+
-      'Não foi possível carregar os dados do dia (payload.json). Confira se o arquivo está '+
-      'publicado ao lado do index.html.</div>';
-    return;
-  }
-  ({DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,
-    COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,REVERTIDO_HOJE,OPORTUNIDADE_HOJE} = P);
-  COV = [...new Set(GROUPS.ICS_GC.concat(GROUPS.NOVOS_NEG))].filter(k=>k!=='IMPERDOAVEIS'&&k!=='VENDAZERO');
-  sel.gc = P.GC_ATIVAS[0];
-  render();
-}
-
 /* ---------- online.json ---------- */
 async function puxaOnline(){
   try{
@@ -769,8 +862,243 @@ async function puxaOnline(){
   }catch(e){}
 }
 
+/* =====================================================================
+   RESUMO DE VENDAS (29/09/26) — botão no fim da consulta.
+   Modelo 2 aprovado: "Faltam X"/"Meta dia X" e Online em destaque,
+   seta com % em segundo plano. Blocos independentes: Volume, ICS GC,
+   Novos Negócios. Colunas seguem o filtro (GC -> SVs, SV -> rotas, rota).
+   Mesmas regras da Parcial: % = (Real ∪ Online)/Meta; ritmo = PACE_ONTEM;
+   faltam = ceil(Meta*DIA_HOJE/TOTAL) - Real (sem descontar Online);
+   Volume verde por % Tendência >= 100; Online verde ao bater o número ao lado.
+   SV.G2.5 (Neutraliza/251) entra no Volume; em ICS/NN a coluna some (sem meta).
+   ===================================================================== */
+const RS = (()=>{
+  const VOL_ORD = ['VOL REFRIGERANTES','VOL CERVEJAS','VOL STILL','VOL AGUA MINERAL','VOL DEST+ART+CND'];
+  const ICS_ORD = ['CCTM 2L PET','KS TT','REFRI SABORES ZERO','POWERADE','KAPO','CERVEJAS','CERVEJAS 600ML RETORNAVEL','EISENBAHN','ARTD KO'];
+  const CURTO_X = {'REFRI SABORES ZERO':'Refri Sab. Zero','CERVEJAS 600ML RETORNAVEL':'Cerv. 600ml Ret.'};
+  const EXCL_PIOR = ['SV.G2.5','SV.G3.3'];
+  const blocos = {vol:true, ics:true, nov:false};
+  let aberto = false, COMPACTO = false;
+  const n = v => { const r = Math.round(v); return (r===0?0:r).toLocaleString('pt-BR'); };
+  const nome = k => CURTO_X[k] || (P.LABELS_CURTO||{})[k] || LABELS[k] || k;
+
+  /* ---- soma de um conjunto de rotas (mesma conta da Parcial) ---- */
+  function soma(gc, rotas){
+    const s = {c:{}, v:{}, vz:{meta:0,real:0,rev:0,op:0,n:0}};
+    const OC = (ONLINE && ONLINE.clientes) || {}, OV = (ONLINE && ONLINE.volume) || {};
+    const ids = {};
+    rotas.forEach(r=>{
+      const d = nodo(gc, r); if(!d) return;
+      [...ICS_ORD, ...GROUPS.NOVOS_NEG].forEach(k=>{
+        const b = d.indicators[k]; if(!b || b.unavailable) return;
+        const t = s.c[k] || (s.c[k] = {meta:0, real:0, onl:0, tot:0});
+        const idsR = new Set(((COBERTOS[r]||{})[k])||[]), idsO = ((OC[r]||{})[k])||[];
+        t.meta += b.meta||0; t.real += b.real||0; t.onl += idsO.length;
+        idsO.forEach(i=>idsR.add(i)); t.tot += idsR.size;
+      });
+      VOL_ORD.forEach(k=>{
+        const b = d.indicators[k]; if(!b || b.unavailable) return;
+        const t = s.v[k] || (s.v[k] = {meta:0, tend:0, mdia:0, onl:0, sem:false});
+        t.meta += b.meta||0; t.tend += b.tendencia||0; t.mdia += b.metaDia||0;
+        t.onl += ((OV[r]||{})[k])||0; if(b.semDadoHoje) t.sem = true;
+      });
+      const z = d.indicators.VENDAZERO || {};
+      s.vz.rev += (REVERTIDO_HOJE||{})[r]||0; s.vz.op += (OPORTUNIDADE_HOJE||{})[r]||0;
+      if(!z.unavailable){ s.vz.meta += z.meta||0; s.vz.real += z.real||0; s.vz.n++; }
+    });
+    if(rotas.length===1) for(const k in s.v) if(s.v[k].sem) s.v[k].indisp = true;
+    return s;
+  }
+
+  /* ---- células ---- */
+  const kpi = (rot, val, cls) => `<span class="rs-k ${cls||''}"><small>${rot}</small><strong>${val}</strong></span>`;
+  const VAZIO = '<div class="rs-cel"><span class="rs-sec">—</span></div>';
+  const seta = ok => `<span class="${ok?'rs-ok':'rs-bad'}">${ok?'▲':'▼'}</span>`;
+  function celVol(x){
+    if(!x || x.indisp || !x.meta) return VAZIO;
+    const p = x.tend/x.meta*100, ok = p>=100, onOk = x.onl >= x.mdia;
+    return `<div class="rs-cel"><div class="rs-par">${kpi('M.dia', n(x.mdia), x.mdia<=0?'rs-meta0':'')}${kpi('Online', n(x.onl), 'rs-on '+(onOk?'rs-ok':'rs-bad'))}</div><span class="rs-sec">${seta(ok)} ${Math.round(p)}% tend.</span></div>`;
+  }
+  function celInd(x){
+    if(!x || !x.meta) return {ok:null, h:VAZIO};
+    const p = Math.round(x.tot/x.meta*100), ok = p >= P.PACE_ONTEM_PCT;
+    const gap = Math.max(0, Math.ceil(x.meta*P.DIA_HOJE/P.TOTAL_DIAS_UTEIS) - x.real);
+    const fatia = Math.ceil(x.meta/P.TOTAL_DIAS_UTEIS), obj = gap>0 ? gap : fatia, onOk = x.onl >= obj;
+    const esq = gap>0 ? kpi('Faltam', n(gap)) : kpi(COMPACTO?'M.dia':'Meta dia', n(fatia), 'rs-meta0');
+    return {ok, h:`<div class="rs-cel"><div class="rs-par">${esq}${kpi('Online', n(x.onl), 'rs-on '+(onOk?'rs-ok':'rs-bad'))}</div><span class="rs-sec">${seta(ok)} ${p}% do mês</span></div>`};
+  }
+  function celVz(z){
+    if(!z.n) return {ok:null, h:VAZIO};
+    const pend = Math.ceil(Math.max(0, z.real - z.meta)), ok = pend===0, revOk = z.rev >= z.op;
+    return {ok, h:`<div class="rs-cel"><div class="rs-par">${kpi('Reverter', n(z.op))}${kpi('Revert.', n(z.rev), 'rs-on '+(revOk?'rs-ok':'rs-bad'))}</div><span class="rs-sec">${seta(ok)} ${ok?'no ritmo':'pend. mês '+n(pend)}</span></div>`};
+  }
+
+  /* ---- colunas conforme o filtro atual ---- */
+  function colunas(){
+    const gc = sel.gc;
+    if(sel.rota){
+      const d = nodo(gc, sel.rota);
+      return {titulo:'Rota '+sel.rota, sub:`${rotaSv(gc,sel.rota)} → rota ${sel.rota}${d&&d.consultor?' · '+d.consultor:''}`, cols:[[sel.rota,[sel.rota]]]};
+    }
+    if(sel.sv){
+      const rs = Object.keys(DATA[gc][sel.sv]);
+      return {titulo:sel.sv, sub:sel.sv+' → rotas', cols:[[sel.sv, rs], ...rs.map(r=>[r,[r]])]};
+    }
+    const svs = svsDe(gc);
+    return {titulo:'Matriz GC.'+gc, sub:'Gerência → supervisores', cols:[['GC.'+gc, rotasDe(gc,'')], ...svs.map(s=>[s, Object.keys(DATA[gc][s])])]};
+  }
+  const thead = (rot, cols) => `<thead><tr><th class="rs-nome">${rot}</th>${cols.map((c,i)=>`<th class="${i===0?'rs-foco':''}">${c[0]}</th>`).join('')}</tr></thead>`;
+  function tabela(linhas, todas, comVz){
+    const cols = todas.filter((c,i)=> i===0 || linhas.some(k=>c[2].c[k] && c[2].c[k].meta));
+    const cont = cols.map(()=>[0,0]);
+    const td = (i,r)=>{ if(r.ok!==null){cont[i][1]++; if(r.ok) cont[i][0]++;} return `<td>${r.h}</td>`; };
+    let body = linhas.map(k=>`<tr><td class="rs-nome">${nome(k)}</td>${cols.map((c,i)=>td(i, celInd(c[2].c[k]))).join('')}</tr>`).join('');
+    if(comVz) body += `<tr><td class="rs-nome">Venda Zero</td>${cols.map((c,i)=>td(i, celVz(c[2].vz))).join('')}</tr>`;
+    body += `<tr class="rs-tot"><td class="rs-nome">No ritmo</td>${cont.map(v=>`<td>${v[1]?v[0]+'/'+v[1]:'—'}</td>`).join('')}</tr>`;
+    return {html:`<table>${thead('Indicador', cols)}<tbody>${body}</tbody></table>`, cont, cols};
+  }
+
+  /* ---- monta a folha ---- */
+  function pinta(){
+    if(!aberto || !P) return;
+    const {titulo, sub, cols} = colunas();
+    cols.forEach(c=>c[2] = soma(sel.gc, c[1]));
+    COMPACTO = cols.length >= 7;
+    const folha = document.getElementById('rsFolha');
+    folha.classList.toggle('rs-compacto', COMPACTO);
+    folha.style.minWidth = innerWidth < 1000 ? Math.max(380, 130 + cols.length*(COMPACTO?112:150)) + 'px' : '';
+    const volT = `<table>${thead('Agrupador', cols)}<tbody>${VOL_ORD.map(k=>`<tr><td class="rs-nome">${LABELS[k]||k}</td>${cols.map(c=>`<td>${celVol(c[2].v[k])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    const ics = tabela(ICS_ORD, cols, true), nov = tabela(GROUPS.NOVOS_NEG, cols, false);
+    const up = (ONLINE && ONLINE.updatedAt) || '';
+    const hhmm = up.split('T')[1] ? up.split('T')[1].slice(0,5) : '';
+    const janela = hhmm && hhmm < '17:30';
+    let pior = '';
+    const cand = ics.cols.slice(1).map((c,i)=>[c[0], ics.cont[i+1]]).filter(x=>!EXCL_PIOR.includes(x[0]) && x[1][1]>0);
+    if(cand.length >= 2){
+      cand.sort((a,b)=>a[1][0]/a[1][1] - b[1][0]/b[1][1]);
+      if(cand[0][1][0] < cand[0][1][1]) pior = `<div class="rs-atencao">Oportunidade de reversão ${janela?'agora':'amanhã'}: ${cand[0][0]}</div>`;
+    }
+    const st = statusAtualizado();
+    const tag = st ? `<span class="rs-tag ${st.cor==='verde'?'rs-tag-on':'rs-tag-off'}">${st.texto}</span>` : `<span class="rs-tag rs-tag-off">sem venda online</span>`;
+    const hoje = up ? up.split('T')[0].split('-').reverse().slice(0,2).join('/') : '';
+    const helm = (document.querySelector('header .helm')||{}).src || '';
+    folha.innerHTML = `
+      <div class="rs-cab"><div>
+          <div class="rs-marca">${helm?`<img src="${helm}" alt="">`:''}COMERCIAL BANDEIRANTES</div>
+          <h2>Resumo de vendas · ${titulo}</h2>
+          <div class="rs-sub">${sub} · ${P.DIA_SEMANA} ${hoje} · dia útil ${P.DIA_HOJE}/${P.TOTAL_DIAS_UTEIS}</div></div>
+        <div class="rs-tags">${tag}<span class="rs-tag rs-tag-rit">Objetivo do ritmo hoje: ${Math.round(P.DIA_HOJE/P.TOTAL_DIAS_UTEIS*100)}%</span></div></div>
+      ${pior}
+      ${blocos.vol?`<div class="rs-bloco"><h3>Volume — tendência do mês <small>Online verde ao bater a Meta dia</small></h3>${volT}</div>`:''}
+      ${blocos.ics?`<div class="rs-bloco"><h3>Coberturas — ICS GC <small>Online verde ao bater o faltam</small></h3>${ics.html}</div>`:''}
+      ${blocos.nov?`<div class="rs-bloco"><h3>Novos Negócios <small>Online verde ao bater o faltam</small></h3>${nov.html}</div>`:''}
+      <div class="rs-rod">Desenvolvido por Karen Oliveira · Analista de Inteligência de Vendas – Matriz G2</div>`;
+    document.querySelectorAll('[data-rsb]').forEach(b=>b.setAttribute('aria-pressed', blocos[b.dataset.rsb]));
+  }
+
+  /* ---- link com filtro + blocos ---- */
+  function linkAtual(){
+    const q = new URLSearchParams();
+    q.set('resumo', Object.keys(blocos).filter(k=>blocos[k]).join(','));
+    q.set('gc', sel.gc); if(sel.sv) q.set('sv', sel.sv); if(sel.rota) q.set('rota', sel.rota);
+    return location.origin + location.pathname + '?' + q.toString().replace(/%2C/g, ',');
+  }
+  const aviso = t => { const el = document.getElementById('rsToast'); el.textContent = t; clearTimeout(aviso.t); aviso.t = setTimeout(()=>el.textContent='', 4000); };
+
+  async function compartilhar(){
+    const url = linkAtual(), titulo = 'Resumo de vendas · ' + colunas().titulo;
+    if(navigator.share){ try{ await navigator.share({title:titulo, text:titulo, url}); return; }catch(e){ if(e && e.name==='AbortError') return; } }
+    try{ await navigator.clipboard.writeText(url); aviso('Link copiado. Cole no WhatsApp.'); }
+    catch(e){ prompt('Copie o link:', url); }
+  }
+
+  function carregaH2C(){
+    if(window.html2canvas) return Promise.resolve();
+    return new Promise((ok, erro)=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = ok; s.onerror = erro; document.head.appendChild(s);
+    });
+  }
+  async function baixarImagem(){
+    const btn = document.getElementById('rsImg'); btn.disabled = true; aviso('Gerando imagem…');
+    try{
+      await carregaH2C();
+      const folha = document.getElementById('rsFolha');
+      const canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
+        windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
+      const blob = await new Promise(r=>canvas.toBlob(r, 'image/png'));
+      const nomeArq = `Resumo_${colunas().titulo.replace(/[^\w.]+/g,'_')}_${P.DIA_HOJE}-${P.TOTAL_DIAS_UTEIS}.png`;
+      const arq = new File([blob], nomeArq, {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[arq]})){
+        try{ await navigator.share({files:[arq], title:nomeArq}); aviso(''); return; }catch(e){ if(e && e.name==='AbortError'){ aviso(''); return; } }
+      }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nomeArq;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+      aviso('Imagem salva: ' + nomeArq);
+    }catch(e){ aviso('Não foi possível gerar a imagem agora. Tente de novo.'); }
+    finally{ btn.disabled = false; }
+  }
+
+  function abre(){
+    aberto = true; document.getElementById('rsOverlay').hidden = false;
+    document.body.classList.add('rs-travado'); pinta();
+    document.getElementById('rsOverlay').scrollTop = 0;
+  }
+  function fecha(){
+    aberto = false; document.getElementById('rsOverlay').hidden = true;
+    document.body.classList.remove('rs-travado');
+    if(location.search.includes('resumo=')) history.replaceState(null, '', location.pathname);
+  }
+  function alterna(k){
+    const lig = Object.values(blocos).filter(Boolean).length;
+    if(blocos[k] && lig===1){ aviso('Deixe pelo menos um bloco ligado.'); return; }
+    blocos[k] = !blocos[k];
+    document.querySelectorAll('[data-rsb]').forEach(b=>b.setAttribute('aria-pressed', blocos[b.dataset.rsb]));
+    pinta();
+  }
+
+  /* ---- abre direto quando vem do link (?resumo=vol,ics&gc=G2&sv=...) ---- */
+  function doLink(){
+    const q = new URLSearchParams(location.search);
+    if(!q.has('resumo')) return;
+    const bl = (q.get('resumo')||'').split(',').filter(k=>k in blocos);
+    if(bl.length) Object.keys(blocos).forEach(k=>blocos[k] = bl.includes(k));
+    const gc = q.get('gc'); if(gc && DATA[gc]) sel = {gc, sv:'', rota:''};
+    const sv = q.get('sv'); if(sv && DATA[sel.gc][sv]) sel.sv = sv;
+    const rota = q.get('rota'); if(rota && rotaSv(sel.gc, rota)){ sel.rota = rota; sel.sv = rotaSv(sel.gc, rota); }
+    render(); abre();
+  }
+
+  function liga(){
+    document.querySelectorAll('[data-rsb]').forEach(b=>b.onclick=()=>alterna(b.dataset.rsb));
+    document.getElementById('btnResumo').onclick = abre;
+    document.getElementById('rsVoltar').onclick = fecha;
+    document.getElementById('rsLink').onclick = compartilhar;
+    document.getElementById('rsImg').onclick = baixarImagem;
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && aberto) fecha(); });
+    let t; addEventListener('resize', ()=>{ clearTimeout(t); t = setTimeout(pinta, 150); });
+  }
+  return {pinta, doLink, liga};
+})();
+
+async function iniciar(){
+  try{
+    const r = await fetch('payload.json?t='+Date.now(), {cache:'no-store'});
+    P = await r.json();
+  }catch(e){
+    $('lista').innerHTML = '<div class="vazio">Não foi possível carregar os dados. Atualize a página.</div>'; return;
+  }
+  ({DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,REVERTIDO_HOJE,OPORTUNIDADE_HOJE} = P);
+  COV = [...new Set(GROUPS.ICS_GC.concat(GROUPS.NOVOS_NEG))].filter(k=>k!=='IMPERDOAVEIS'&&k!=='VENDAZERO');
+  sel = {gc:P.GC_ATIVAS[0], sv:'', rota:''};
+  RS.liga();
+  render();
+  await puxaOnline();
+  RS.doLink();
+  setInterval(puxaOnline, 300000);
+}
 iniciar();
-puxaOnline(); setInterval(puxaOnline, 300000);
 </script>
 </body>
 </html>
