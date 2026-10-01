@@ -19,6 +19,7 @@
   --preto:#0a0a0a; --carvao:#1c1c1e; --linha:#e3e3e6; --papel:#f5f5f7; --branco:#fff;
   --vermelho:#e4002b; --verde:#1d9e75; --verdeE:#146b4f; --ruim:#9c1c1c; --vermelho2:#c62828;
   --cinza:#8a8a8f; --card:#f0f0f2; --rosa:#fbeeee; --menta:#e9f4ef;
+  --ambar:#9a6b00; --creme:#fdf6e3;
   --serif:'Bookman Old Style','Bookman','Georgia','Times New Roman',serif;
 }
 html,body{margin:0;padding:0;background:var(--papel);color:var(--preto);
@@ -104,6 +105,21 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
 .tile.ok{border-color:var(--verdeE);background:var(--menta);color:var(--verdeE)}
 .tile.na{border-color:#d5d5da;background:#fff;color:#9a9aa0}
 .tile.nd{border-color:#d5d5da;background:#fff;color:#9a9aa0}
+/* ---------- barra de status de meta (aba Volume do card de cliente, 01/10/26) ---------- */
+.tileVol{border:2px solid;border-radius:11px;padding:10px 8px 9px;text-align:center;line-height:1.2}
+.tileVol .t{font-size:13px;font-weight:750}
+.tileVol .barraWrap{height:7px;border-radius:4px;background:rgba(0,0,0,.08);margin-top:7px;overflow:hidden}
+.tileVol .barra{height:100%;border-radius:4px}
+.tileVol .e{font-size:10.5px;letter-spacing:.03em;margin-top:5px;text-transform:uppercase;font-weight:750}
+.tileVol .nums{font-size:9.5px;color:var(--cinza);margin-top:1px;text-transform:none;letter-spacing:0;font-weight:400}
+.tileVol.no{border-color:var(--ruim);background:var(--rosa);color:var(--ruim)}
+.tileVol.no .barra{background:var(--ruim)}
+.tileVol.pace{border-color:var(--ambar);background:var(--creme);color:var(--ambar)}
+.tileVol.pace .barra{background:var(--ambar)}
+.tileVol.ok{border-color:var(--verdeE);background:var(--menta);color:var(--verdeE)}
+.tileVol.ok .barra{background:var(--verdeE)}
+.tileVol.nd{border-color:#d5d5da;background:#fff;color:#9a9aa0}
+.tileVol.nd .barraWrap{visibility:hidden}
 .painel h4{font-size:12px;letter-spacing:.09em;color:#7d7d82;margin:16px 0 7px;text-transform:uppercase}
 .painel .semim{font-size:14px;color:#9a9aa0}
 
@@ -814,6 +830,29 @@ document.addEventListener('click', e=>{
 document.addEventListener('focusin', e=>{
   if(e.target.id==='q' && ULTIMA_BUSCA.length) $('qSugestoes').classList.add('on');
 });
+function tileVolume(k, bloco){
+  // Barra de status de meta por cliente (aba Volume), pedido do usuario
+  // 01/10/26: mesmo raciocinio do Painel de Ritmo, 3 faixas de cor.
+  // `bloco` = [meta,real,pct,status] (status: 0 vermelho/fora do ritmo,
+  // 1 amarelo/dentro do ritmo, 2 verde/meta batida) ou null (sem meta).
+  const label = P.LABELS_CURTO[k]||LABELS[k];
+  if(!P.FONTES.venda)
+    return `<div class="tileVol nd"><div class="t">${label}</div>
+      <div class="barraWrap"><div class="barra"></div></div>
+      <div class="e">sem venda</div></div>`;
+  if(!bloco)
+    return `<div class="tileVol nd"><div class="t">${label}</div>
+      <div class="barraWrap"><div class="barra"></div></div>
+      <div class="e">sem meta</div></div>`;
+  const [meta,real,pct,status] = bloco;
+  const cls = status===2?'ok':(status===1?'pace':'no');
+  const rotulo = status===2?'meta batida':(status===1?'dentro do ritmo':'fora do ritmo');
+  const larg = Math.max(0, Math.min(100, pct));
+  return `<div class="tileVol ${cls}"><div class="t">${label}</div>
+    <div class="barraWrap"><div class="barra" style="width:${larg}%"></div></div>
+    <div class="e">${pct}% · ${rotulo}</div>
+    <div class="nums">${real} / ${meta}</div></div>`;
+}
 function buscaCliente(){
   const v=$('q').value.trim(); if(!v){$('cli').innerHTML='';return;}
   const id=parseInt(v,10);
@@ -827,17 +866,26 @@ function buscaCliente(){
   if(!achado){$('cli').innerHTML='';return;}
   const kstt = ehKstt(achado);
   const grupo = P.COV_GRUPO[aba];              // só os itens da aba ativa (ICS GC ou Novos Negócios)
-  const chips = grupo.map(k=>{
-    if(k==='KS TT' && !kstt)
-      return `<div class="tile na"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
-        <div class="e">não elegível</div></div>`;
-    if(!P.FONTES.venda)
-      return `<div class="tile nd"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
-        <div class="e">sem venda</div></div>`;
-    const ok=(((COBERTOS[rota]||{})[k])||[]).includes(achado[0]);
-    return `<div class="tile ${ok?'ok':'no'}"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
-      <div class="e">${ok?'real':'sem compra'}</div></div>`;
-  }).join('');
+  let chips;
+  if(aba==='VOLUME'){
+    // Volume nao tem cobertura binaria (COBERTOS nunca e populado pra
+    // VOL_*) -- usa a barra de status de meta por cliente (VOLUME_CLIENTE),
+    // 3 faixas de cor em vez do chip ok/sem-compra das outras abas.
+    const porCliente = ((P.VOLUME_CLIENTE||{})[rota]||{})[achado[0]];
+    chips = grupo.map((k,i)=> tileVolume(k, porCliente ? porCliente[i] : null)).join('');
+  } else {
+    chips = grupo.map(k=>{
+      if(k==='KS TT' && !kstt)
+        return `<div class="tile na"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
+          <div class="e">não elegível</div></div>`;
+      if(!P.FONTES.venda)
+        return `<div class="tile nd"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
+          <div class="e">sem venda</div></div>`;
+      const ok=(((COBERTOS[rota]||{})[k])||[]).includes(achado[0]);
+      return `<div class="tile ${ok?'ok':'no'}"><div class="t">${P.LABELS_CURTO[k]||LABELS[k]}</div>
+        <div class="e">${ok?'real':'sem compra'}</div></div>`;
+    }).join('');
+  }
   const vzEntries = (VENDAZERO_CLIENTES[rota]||[]).filter(e=>e.pv===achado[0]);
   const vzTotal = vzEntries.reduce((s,e)=>s+e.vdz,0);
   const tagVZ = vzTotal>0
