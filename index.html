@@ -43,6 +43,8 @@ h1{margin:6px 0 2px;font-size:23px;font-weight:750;letter-spacing:-.02em}
 .tagUpd .pt{width:6px;height:6px;border-radius:50%;background:#4ade9a;flex:none}
 .tagUpd.encerrado{background:rgba(228,0,43,.20);color:#ff7a8c;border-color:rgba(255,122,140,.40)}
 .tagUpd.encerrado .pt{background:#ff4d6a}
+.tagUpd.fechamento{background:rgba(255,193,7,.18);color:#ffd166;border-color:rgba(255,209,102,.40)}
+.tagUpd.fechamento .pt{background:#ffd166}
 .ritmo{background:#161618;border:1px solid #2a2a2e;border-radius:9px;padding:8px 10px;
   font-size:12px;color:#d4d4d8;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .ritmo b{color:#fff;font-weight:650}
@@ -386,6 +388,13 @@ function agoraSP(){
 
 function statusAtualizado(){
   if(!ONLINE || !ONLINE.updatedAt) return null;
+  // Fechamento do Mes (01/10/26): quando online.json traz 'fechamentoMes',
+  // o dia nao tera nenhum update de venda novo -- a tag mostra o fechamento
+  // em vez de rodar a logica normal de janela 07:30-17:30 (que marcaria
+  // "Online" ou "Ultima atualizacao" de um jeito enganoso, como se fosse
+  // acompanhamento do dia corrente). Some sozinho assim que um build novo
+  // sem esse campo substituir o online.json (primeiro update do mes novo).
+  if(ONLINE.fechamentoMes) return {cor:'fechamento', texto:`Fechamento ${ONLINE.fechamentoMes}`};
   const [dataStr, horaStr] = ONLINE.updatedAt.split('T');
   const hhmm = (horaStr||'').slice(0,5);
   const [anoU, mesU, diaU] = dataStr.split('-').map(Number);
@@ -401,11 +410,16 @@ function statusAtualizado(){
   return {cor:'vermelho', texto:`Última atualização em ${dd}/${mm} ${hhmm}`};
 }
 
+function claseTag(st){
+  if(!st) return 'tagUpd';
+  if(st.cor==='vermelho') return 'tagUpd encerrado';
+  if(st.cor==='fechamento') return 'tagUpd fechamento';
+  return 'tagUpd';
+}
 function tagAtualizado(){
   const st = statusAtualizado();
   if(!st) return '';
-  const cls = st.cor==='vermelho' ? 'tagUpd encerrado' : 'tagUpd';
-  return ` <span class="${cls}" id="tagUpdEl"><span class="pt"></span>${st.texto}</span>`;
+  return ` <span class="${claseTag(st)}" id="tagUpdEl"><span class="pt"></span>${st.texto}</span>`;
 }
 
 // reavalia a tag e o rodape a cada 60s, sem re-renderizar o painel inteiro
@@ -414,7 +428,7 @@ function atualizarStatusTag(){
   const st = statusAtualizado();
   const tagEl = document.getElementById('tagUpdEl');
   if(tagEl){
-    tagEl.className = st ? (st.cor==='vermelho'?'tagUpd encerrado':'tagUpd') : 'tagUpd';
+    tagEl.className = claseTag(st);
     tagEl.innerHTML = st ? `<span class="pt"></span>${st.texto}` : '';
   }
   const rEl = document.getElementById('rodapeStatus');
