@@ -181,6 +181,8 @@ select{flex:1;min-width:0;background:#161618;color:#fff;border:1px solid #33333a
   text-transform:uppercase;letter-spacing:.02em}
 .tagVZ{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:750;color:#fff;
   background:var(--vermelho);border-radius:7px;padding:2px 8px;vertical-align:middle}
+.tagAtivo{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:750;color:#fff;
+  background:var(--verde);border-radius:7px;padding:2px 8px;vertical-align:middle}
 .tagRede{display:inline-block;margin-left:7px;font-size:10.5px;font-weight:750;color:#fff;
   background:var(--carvao);border-radius:7px;padding:2px 8px;vertical-align:middle;
   text-transform:uppercase;letter-spacing:.03em}
@@ -363,7 +365,7 @@ body.rs-travado{overflow:hidden}
 <script>
 // 21/09/26: o dado nao vem mais embutido -- iniciar() busca payload.json (cache:no-store)
 let P = null;
-let DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,REVERTIDO_HOJE,OPORTUNIDADE_HOJE;
+let DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,COMODATO_ATIVOS,REVERTIDO_HOJE,OPORTUNIDADE_HOJE;
 const INVERTED = new Set(['VENDAZERO']);
 const KSTT_SEG = new Set(['LANCHONETE','RESTAURANTE','BOTECO','PADARIAS']);
 let COV = [];
@@ -573,7 +575,7 @@ function piorSv(){
     if(svs.length < 2) return '';
     let pior=null;
     svs.forEach(sv=>{
-      if(sv==='SV.G2.5'||sv==='SV.G3.3') return; // rotas online, nao entram nessa comparacao
+      if(sv==='SV.G2.5'||sv==='SV.G3.3'||sv==='SV.IT.3'||sv==='SV.MO.3') return; // SV.G3.3 = rotas online; SV.G2.5/SV.IT.3/SV.MO.3 = Neutraliza (sem SUP/VEND de verdade) -- nao entram nessa comparacao
       const a = agrega(Object.keys(DATA[sel.gc][sv])).ind;
       const disp = grupo.filter(k=>a[k] && !a[k].unavailable);
       if(!disp.length) return;
@@ -990,7 +992,11 @@ function buscaCliente(){
   const vzTotal = vzEntries.reduce((s,e)=>s+e.vdz,0);
   const tagVZ = vzTotal>0
     ? `<span class="tagVZ">Venda Zero · ${vzTotal} geladeira${vzTotal>1?'s':''}</span>` : '';
-  $('cli').innerHTML = `<div class="cli"><h3>${achado[1]}${tagVZ}</h3>
+  // Cliente ativo (07/10/26): fora do Venda Zero e com geladeira em comodato (export completo)
+  const nAtivo = vzTotal>0 ? 0 : (((COMODATO_ATIVOS[rota]||{})[String(achado[0])])||0);
+  const tagAtivo = nAtivo>0
+    ? `<span class="tagAtivo">Cliente ativo · ${nAtivo} geladeira${nAtivo>1?'s':''}</span>` : '';
+  $('cli').innerHTML = `<div class="cli"><h3>${achado[1]}${tagVZ}${tagAtivo}</h3>
     <div class="meta">PV ${achado[0]} · ${SEGS[achado[2]]||'—'} · rota ${rota} · visita ${DIAS[achado[3]]||'—'}</div>
     <div class="painel">
       <div class="grid13">${chips}</div>
@@ -1046,8 +1052,12 @@ function renderRede(rede){
   });
   const tagVZ = vzTotal>0
     ? `<span class="tagVZ">Venda Zero · ${vzTotal} geladeira${vzTotal>1?'s':''}</span>` : '';
+  let nAtivoR = 0;
+  if(vzTotal===0) membros.forEach(([r,cid])=>{ nAtivoR += ((COMODATO_ATIVOS[r]||{})[String(cid)])||0; });
+  const tagAtivoR = nAtivoR>0
+    ? `<span class="tagAtivo">Cliente ativo · ${nAtivoR} geladeira${nAtivoR>1?'s':''}</span>` : '';
   const rotaTxt = rotasUnicas.length>1 ? `rotas ${rotasUnicas.join(', ')}` : `rota ${rotasUnicas[0]}`;
-  $('cli').innerHTML = `<div class="cli"><h3>${rede.nome}<span class="tagRede">Rede</span>${tagVZ}</h3>
+  $('cli').innerHTML = `<div class="cli"><h3>${rede.nome}<span class="tagRede">Rede</span>${tagVZ}${tagAtivoR}</h3>
     <div class="meta">${membros.length} loja${membros.length>1?'s':''} · ${rotaTxt}</div>
     <div class="painel">
       <div class="grid13">${chips}</div>
@@ -1075,13 +1085,15 @@ async function puxaOnline(){
    Mesmas regras da Parcial: % = (Real ∪ Online)/Meta; ritmo = PACE_ONTEM;
    faltam = ceil(Meta*DIA_HOJE/TOTAL) - Real (sem descontar Online);
    Volume verde por % Tendência >= 100; Online verde ao bater o número ao lado.
-   SV.G2.5 (Neutraliza/251) entra no Volume; em ICS/NN a coluna some (sem meta).
+   SV.G2.5/SV.IT.3/SV.MO.3 (Neutraliza -- 251/I31/M31) entram no Volume;
+   em ICS/NN a coluna some (sem meta). SV.IT.3/SV.MO.3 adicionadas 05/10/26,
+   mesmo tratamento da SV.G2.5 original.
    ===================================================================== */
 const RS = (()=>{
   const VOL_ORD = ['VOL REFRIGERANTES','VOL CERVEJAS','VOL STILL','VOL AGUA MINERAL','VOL DEST+ART+CND'];
   const ICS_ORD = ['CCTM 2L PET','KS TT','REFRI SABORES ZERO','POWERADE','KAPO','CERVEJAS','CERVEJAS 600ML RETORNAVEL','EISENBAHN','ARTD KO'];
   const CURTO_X = {'REFRI SABORES ZERO':'Refri Sab. Zero','CERVEJAS 600ML RETORNAVEL':'Cerv. 600ml Ret.'};
-  const EXCL_PIOR = ['SV.G2.5','SV.G3.3'];
+  const EXCL_PIOR = ['SV.G2.5','SV.G3.3','SV.IT.3','SV.MO.3'];
   const blocos = {vol:true, ics:true, nov:false};
   let aberto = false, COMPACTO = false;
   const n = v => { const r = Math.round(v); return (r===0?0:r).toLocaleString('pt-BR'); };
@@ -1301,7 +1313,8 @@ async function iniciar(){
   }catch(e){
     $('lista').innerHTML = '<div class="vazio">Não foi possível carregar os dados. Atualize a página.</div>'; return;
   }
-  ({DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,REVERTIDO_HOJE,OPORTUNIDADE_HOJE} = P);
+  ({DATA,LABELS,GROUPS,CLIENT_ROSTER,CLIENTES_HOJE,OPORTUNIDADES_DIA,VISITAS_DIA,SEGS,DIAS,COBERTOS,SEM_COMPRA_HOJE,VENDAZERO_CLIENTES,COMODATO_ATIVOS,REVERTIDO_HOJE,OPORTUNIDADE_HOJE} = P);
+  COMODATO_ATIVOS = COMODATO_ATIVOS || {};
   COV = [...new Set(GROUPS.ICS_GC.concat(GROUPS.NOVOS_NEG))].filter(k=>k!=='IMPERDOAVEIS'&&k!=='VENDAZERO');
   sel = {gc:P.GC_ATIVAS[0], sv:'', rota:''};
   RS.liga();
