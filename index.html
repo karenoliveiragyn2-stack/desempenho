@@ -989,11 +989,14 @@ function buscaCliente(){
     }).join('');
   }
   const vzEntries = (VENDAZERO_CLIENTES[rota]||[]).filter(e=>e.pv===achado[0]);
-  const vzTotal = vzEntries.reduce((s,e)=>s+e.vdz,0);
+  // Venda Zero pendente = equipamentos ainda nao revertidos hoje; os revertidos (venda online
+  // nos grupos-gatilho) passam a contar como "Cliente ativo" -- atualiza a cada Atualizacao.
+  const vzTotal = vzEntries.filter(e=>!e.revertido).reduce((s,e)=>s+e.vdz,0);
+  const vzRevert = vzEntries.filter(e=>e.revertido).reduce((s,e)=>s+e.vdz,0);
   const tagVZ = vzTotal>0
     ? `<span class="tagVZ">Venda Zero · ${vzTotal} geladeira${vzTotal>1?'s':''}</span>` : '';
-  // Cliente ativo (07/10/26): fora do Venda Zero e com geladeira em comodato (export completo)
-  const nAtivo = vzTotal>0 ? 0 : (((COMODATO_ATIVOS[rota]||{})[String(achado[0])])||0);
+  // Cliente ativo (07/10/26): geladeiras fora do Venda Zero (export completo) + revertidas hoje
+  const nAtivo = (((COMODATO_ATIVOS[rota]||{})[String(achado[0])])||0) + vzRevert;
   const tagAtivo = nAtivo>0
     ? `<span class="tagAtivo">Cliente ativo · ${nAtivo} geladeira${nAtivo>1?'s':''}</span>` : '';
   $('cli').innerHTML = `<div class="cli"><h3>${achado[1]}${tagVZ}${tagAtivo}</h3>
@@ -1046,14 +1049,14 @@ function renderRede(rede){
         <div class="e">${cobertos}/${elegiveis} lojas</div></div>`;
     }).join('');
   }
-  let vzTotal = 0;
+  let vzTotal = 0, vzRevertR = 0;
   membros.forEach(([r,cid])=>{
-    (VENDAZERO_CLIENTES[r]||[]).filter(e=>e.pv===cid).forEach(e=>{ vzTotal += e.vdz; });
+    (VENDAZERO_CLIENTES[r]||[]).filter(e=>e.pv===cid).forEach(e=>{ if(e.revertido) vzRevertR += e.vdz; else vzTotal += e.vdz; });
   });
   const tagVZ = vzTotal>0
     ? `<span class="tagVZ">Venda Zero · ${vzTotal} geladeira${vzTotal>1?'s':''}</span>` : '';
-  let nAtivoR = 0;
-  if(vzTotal===0) membros.forEach(([r,cid])=>{ nAtivoR += ((COMODATO_ATIVOS[r]||{})[String(cid)])||0; });
+  let nAtivoR = vzRevertR;
+  membros.forEach(([r,cid])=>{ nAtivoR += ((COMODATO_ATIVOS[r]||{})[String(cid)])||0; });
   const tagAtivoR = nAtivoR>0
     ? `<span class="tagAtivo">Cliente ativo · ${nAtivoR} geladeira${nAtivoR>1?'s':''}</span>` : '';
   const rotaTxt = rotasUnicas.length>1 ? `rotas ${rotasUnicas.join(', ')}` : `rota ${rotasUnicas[0]}`;
