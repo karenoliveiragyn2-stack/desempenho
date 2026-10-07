@@ -1110,7 +1110,7 @@ const RS = (()=>{
     const ids = {};
     rotas.forEach(r=>{
       const d = nodo(gc, r); if(!d) return;
-      [...ICS_ORD, ...GROUPS.NOVOS_NEG].forEach(k=>{
+      [...new Set([...ICS_ORD, ...GROUPS.NOVOS_NEG])].forEach(k=>{   // ARTD KO esta nos dois grupos: Set evita somar em dobro
         const b = d.indicators[k]; if(!b || b.unavailable) return;
         const t = s.c[k] || (s.c[k] = {meta:0, real:0, onl:0, tot:0});
         const idsR = new Set(((COBERTOS[r]||{})[k])||[]), idsO = ((OC[r]||{})[k])||[];
