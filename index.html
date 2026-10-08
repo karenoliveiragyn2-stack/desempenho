@@ -274,6 +274,11 @@ body.rs-travado{overflow:hidden}
   .rs-tags{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
 }
 /* durante a captura do PDF: sempre a tabela larga, igual ao PC */
+#rsFolha.rs-pdf-m .rs-tab{display:none!important}
+#rsFolha.rs-pdf-m .rs-cards{display:flex!important;flex-direction:column;gap:9px}
+#rsFolha.rs-pdf-m{padding:12px 10px 10px;min-width:0}
+#rsFolha.rs-pdf-m .rs-cab h2{font-size:18px}
+#rsFolha.rs-pdf-m .rs-tags{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
 #rsFolha.rs-pdf .rs-tab{display:block!important}
 #rsFolha.rs-pdf .rs-cards{display:none!important}
 /* tela cheia no PC/notebook */
@@ -1279,18 +1284,58 @@ const RS = (()=>{
         carregaScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf')
       ]);
       const folha = document.getElementById('rsFolha');
-      const minAntes = folha.style.minWidth;
-      folha.classList.add('rs-pdf'); folha.style.minWidth = (innerWidth < 1000 ? LARG_MIN : 0) + 'px';
-      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-      let canvas;
-      try{
-        canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
-          windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
-      } finally { folha.classList.remove('rs-pdf'); folha.style.minWidth = minAntes; }
-      // uma página só, do tamanho exato da folha (nada cortado, abre em qualquer leitor)
-      const w = canvas.width/2, h = canvas.height/2;
-      const pdf = new window.jspdf.jsPDF({orientation: w>h?'landscape':'portrait', unit:'px', format:[w,h], hotfixes:['px_scaling'], compress:true});
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, w, h);
+      const minAntes = folha.style.minWidth, largAntes = folha.style.width;
+      const celular = innerWidth < 700;
+      let pdf;
+      if(celular){
+        /* celular (08/10/26): cartoes do resumo em paginas do tamanho da tela (9:16), nenhum cartao cortado ao meio */
+        const LARG = 420;
+        folha.classList.add('rs-pdf-m'); folha.style.width = LARG+'px'; folha.style.minWidth = '0';
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        let canvas, atomos = [], altTotal = 0;
+        try{
+          const topF = folha.getBoundingClientRect().top;
+          const R = el => { const r = el.getBoundingClientRect(); return {t:r.top-topF, b:r.bottom-topF}; };
+          const uni = (x,y) => ({t:Math.min(x.t,y.t), b:Math.max(x.b,y.b)});
+          atomos.push(R(folha.querySelector('.rs-cab')));
+          const at = folha.querySelector('.rs-atencao'); if(at) atomos.push(R(at));
+          folha.querySelectorAll('.rs-bloco').forEach(bl=>{
+            const h = R(bl.querySelector('h3')), cs = [...bl.querySelectorAll('.rs-cards .rs-card')].map(R);
+            if(cs.length){ atomos.push(uni(h, cs[0])); cs.slice(1).forEach(c=>atomos.push(c)); } else atomos.push(h);
+          });
+          atomos.push(R(folha.querySelector('.rs-rod')));
+          altTotal = folha.scrollHeight;
+          canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:LARG, width:LARG, height:altTotal});
+        } finally { folha.classList.remove('rs-pdf-m'); folha.style.width = largAntes; folha.style.minWidth = minAntes; }
+        const maxAt = Math.max(...atomos.map(x=>x.b-x.t));
+        const H = Math.max(747, Math.ceil(maxAt) + 16);
+        const paginas = []; let i = 0, ini = 0;
+        while(i < atomos.length){
+          let j = i; while(j+1 < atomos.length && atomos[j+1].b - ini + 8 <= H) j++;
+          paginas.push([ini, Math.min(altTotal, atomos[j].b + 8)]);
+          i = j + 1; if(i < atomos.length) ini = Math.max(0, atomos[i].t - 6);
+        }
+        pdf = new window.jspdf.jsPDF({orientation:'portrait', unit:'px', format:[LARG,H], hotfixes:['px_scaling'], compress:true});
+        paginas.forEach(([y0,y1],n)=>{
+          const pc = document.createElement('canvas'); pc.width = LARG*2; pc.height = H*2;
+          const cx = pc.getContext('2d'); cx.fillStyle = '#ffffff'; cx.fillRect(0,0,pc.width,pc.height);
+          cx.drawImage(canvas, 0, y0*2, LARG*2, (y1-y0)*2, 0, 0, LARG*2, (y1-y0)*2);
+          if(n>0) pdf.addPage([LARG,H], 'portrait');
+          pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, LARG, H);
+        });
+      } else {
+        folha.classList.add('rs-pdf'); folha.style.minWidth = (innerWidth < 1000 ? LARG_MIN : 0) + 'px';
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        let canvas;
+        try{
+          canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
+            windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
+        } finally { folha.classList.remove('rs-pdf'); folha.style.minWidth = minAntes; }
+        // uma pagina so, do tamanho exato da folha (nada cortado, abre em qualquer leitor)
+        const w = canvas.width/2, h = canvas.height/2;
+        pdf = new window.jspdf.jsPDF({orientation: w>h?'landscape':'portrait', unit:'px', format:[w,h], hotfixes:['px_scaling'], compress:true});
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, w, h);
+      }
       pdf.setProperties({title:'Resumo de vendas · '+colunas().titulo, author:'Comercial Bandeirantes'});
       const nomeArq = `Resumo_${colunas().titulo.replace(/[^\w.]+/g,'_')}_${P.DIA_HOJE}-${P.TOTAL_DIAS_UTEIS}.pdf`;
       const blob = pdf.output('blob');
