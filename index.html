@@ -254,6 +254,28 @@ body.rs-travado{overflow:hidden}
 .rs-compacto .rs-k{min-width:34px;padding:2px 4px} .rs-compacto .rs-k strong{font-size:13.5px} .rs-compacto .rs-k small{font-size:8px} .rs-compacto .rs-sec{font-size:9px}
 #rsFolha.rs-compacto thead th{font-size:10.5px}
 .rs-rod{border-top:1px solid #e6e6ea;padding-top:7px;font-size:10px;color:#b5b5ba;text-align:center}
+
+/* ---------- resumo no celular (08/10/26): cartoes por supervisor em vez de tabela larga ---------- */
+.rs-cards{display:none}
+.rs-card{border:1px solid #e6e6ea;border-radius:10px;overflow:hidden;background:#fff}
+.rs-cardh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;background:#F2F2F2;color:#141416;font-weight:800;font-size:13px}
+.rs-card.rs-foco .rs-cardh{background:#141416;color:#fff}
+.rs-cardh small{font-size:11px;font-weight:700;opacity:.85}
+.rs-lin{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-top:1px solid #e6e6ea}
+.rs-lin .rs-nome{padding:0;font-size:12.5px;font-weight:700;white-space:normal;min-width:0}
+.rs-lin .rs-cel{align-items:flex-end;flex:none}
+@media (max-width:699px){
+  .rs-tab{display:none}
+  .rs-cards{display:flex;flex-direction:column;gap:9px}
+  .rs-barra{position:static;padding:10px}
+  .rs-corpo{padding:8px}
+  #rsFolha{padding:12px 10px 10px;min-width:0}
+  .rs-cab h2{font-size:18px}
+  .rs-tags{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+}
+/* durante a captura do PDF: sempre a tabela larga, igual ao PC */
+#rsFolha.rs-pdf .rs-tab{display:block!important}
+#rsFolha.rs-pdf .rs-cards{display:none!important}
 /* tela cheia no PC/notebook */
 @media (min-width:1000px){
   .rs-barra{padding:12px 28px}
@@ -1099,7 +1121,7 @@ const RS = (()=>{
   const CURTO_X = {'REFRI SABORES ZERO':'Refri Sab. Zero','CERVEJAS 600ML RETORNAVEL':'Cerv. 600ml Ret.'};
   const EXCL_PIOR = ['SV.G2.5','SV.G3.3','SV.IT.3','SV.MO.3'];
   const blocos = {vol:true, ics:true, nov:false};
-  let aberto = false, COMPACTO = false;
+  let aberto = false, COMPACTO = false, LARG_MIN = 380;
   const n = v => { const r = Math.round(v); return (r===0?0:r).toLocaleString('pt-BR'); };
   const nome = k => CURTO_X[k] || (P.LABELS_CURTO||{})[k] || LABELS[k] || k;
 
@@ -1176,7 +1198,13 @@ const RS = (()=>{
     let body = linhas.map(k=>`<tr><td class="rs-nome">${nome(k)}</td>${cols.map((c,i)=>td(i, celInd(c[2].c[k]))).join('')}</tr>`).join('');
     if(comVz) body += `<tr><td class="rs-nome">Venda Zero</td>${cols.map((c,i)=>td(i, celVz(c[2].vz))).join('')}</tr>`;
     body += `<tr class="rs-tot"><td class="rs-nome">No ritmo</td>${cont.map(v=>`<td>${v[1]?v[0]+'/'+v[1]:'—'}</td>`).join('')}</tr>`;
-    return {html:`<table>${thead('Indicador', cols)}<tbody>${body}</tbody></table>`, cont, cols};
+    const cards = cols.map((c,i)=>{
+      const lin = linhas.map(k=>{ const r = celInd(c[2].c[k]); return r.ok===null ? '' : `<div class="rs-lin"><span class="rs-nome">${nome(k)}</span>${r.h}</div>`; }).join('')
+        + (comVz ? (()=>{ const r = celVz(c[2].vz); return r.ok===null ? '' : `<div class="rs-lin"><span class="rs-nome">Venda Zero</span>${r.h}</div>`; })() : '');
+      const ct = cont[i][1] ? `<small>${cont[i][0]}/${cont[i][1]} no ritmo</small>` : '';
+      return `<div class="rs-card ${i===0?'rs-foco':''}"><div class="rs-cardh"><span>${c[0]}</span>${ct}</div>${lin}</div>`;
+    }).join('');
+    return {html:`<div class="rs-tab"><table>${thead('Indicador', cols)}<tbody>${body}</tbody></table></div><div class="rs-cards">${cards}</div>`, cont, cols};
   }
 
   /* ---- monta a folha ---- */
@@ -1187,8 +1215,11 @@ const RS = (()=>{
     COMPACTO = cols.length >= 7;
     const folha = document.getElementById('rsFolha');
     folha.classList.toggle('rs-compacto', COMPACTO);
-    folha.style.minWidth = innerWidth < 1000 ? Math.max(380, 130 + cols.length*(COMPACTO?112:150)) + 'px' : '';
-    const volT = `<table>${thead('Agrupador', cols)}<tbody>${VOL_ORD.map(k=>`<tr><td class="rs-nome">${LABELS[k]||k}</td>${cols.map(c=>`<td>${celVol(c[2].v[k])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    LARG_MIN = Math.max(380, 130 + cols.length*(COMPACTO?112:150));
+    folha.style.minWidth = (innerWidth >= 700 && innerWidth < 1000) ? LARG_MIN + 'px' : '';
+    const volTab = `<table>${thead('Agrupador', cols)}<tbody>${VOL_ORD.map(k=>`<tr><td class="rs-nome">${LABELS[k]||k}</td>${cols.map(c=>`<td>${celVol(c[2].v[k])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    const volCards = cols.map((c,i)=>`<div class="rs-card ${i===0?'rs-foco':''}"><div class="rs-cardh"><span>${c[0]}</span></div>${VOL_ORD.map(k=>{ const x=c[2].v[k]; return (!x||x.indisp||!x.meta) ? '' : `<div class="rs-lin"><span class="rs-nome">${LABELS[k]||k}</span>${celVol(x)}</div>`; }).join('')}</div>`).join('');
+    const volT = `<div class="rs-tab">${volTab}</div><div class="rs-cards">${volCards}</div>`;
     const ics = tabela(ICS_ORD, cols, true), nov = tabela(GROUPS.NOVOS_NEG, cols, false);
     const up = (ONLINE && ONLINE.updatedAt) || '';
     const hhmm = up.split('T')[1] ? up.split('T')[1].slice(0,5) : '';
@@ -1248,8 +1279,14 @@ const RS = (()=>{
         carregaScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf')
       ]);
       const folha = document.getElementById('rsFolha');
-      const canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
-        windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
+      const minAntes = folha.style.minWidth;
+      folha.classList.add('rs-pdf'); folha.style.minWidth = (innerWidth < 1000 ? LARG_MIN : 0) + 'px';
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      let canvas;
+      try{
+        canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
+          windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
+      } finally { folha.classList.remove('rs-pdf'); folha.style.minWidth = minAntes; }
       // uma página só, do tamanho exato da folha (nada cortado, abre em qualquer leitor)
       const w = canvas.width/2, h = canvas.height/2;
       const pdf = new window.jspdf.jsPDF({orientation: w>h?'landscape':'portrait', unit:'px', format:[w,h], hotfixes:['px_scaling'], compress:true});
