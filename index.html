@@ -274,11 +274,6 @@ body.rs-travado{overflow:hidden}
   .rs-tags{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
 }
 /* durante a captura do PDF: sempre a tabela larga, igual ao PC */
-#rsFolha.rs-pdf-m .rs-tab{display:none!important}
-#rsFolha.rs-pdf-m .rs-cards{display:flex!important;flex-direction:column;gap:9px}
-#rsFolha.rs-pdf-m{padding:12px 10px 10px;min-width:0}
-#rsFolha.rs-pdf-m .rs-cab h2{font-size:18px}
-#rsFolha.rs-pdf-m .rs-tags{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
 #rsFolha.rs-pdf .rs-tab{display:block!important}
 #rsFolha.rs-pdf .rs-cards{display:none!important}
 /* tela cheia no PC/notebook */
@@ -1285,57 +1280,45 @@ const RS = (()=>{
       ]);
       const folha = document.getElementById('rsFolha');
       const minAntes = folha.style.minWidth, largAntes = folha.style.width;
-      const celular = innerWidth < 700;
-      let pdf;
-      if(celular){
-        /* celular (08/10/26): cartoes do resumo em paginas do tamanho da tela (9:16), nenhum cartao cortado ao meio */
-        const LARG = 420;
-        folha.classList.add('rs-pdf-m'); folha.style.width = LARG+'px'; folha.style.minWidth = '0';
-        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-        let canvas, atomos = [], altTotal = 0;
-        try{
-          const topF = folha.getBoundingClientRect().top;
+      /* 08/10/26: PDF sempre no formato da visao PC (tabela), em paginas deitadas (16:9) que cabem na tela na horizontal.
+         Bloco mais alto que a pagina ganha uma pagina mais alta (rolagem so na vertical). Vale p/ celular, tablet e PC. */
+      const W = innerWidth >= 1000 ? Math.ceil(folha.scrollWidth) : Math.max(1200, LARG_MIN);
+      folha.classList.add('rs-pdf'); folha.style.width = W+'px'; folha.style.minWidth = '0';
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      let canvas, atomos = [], altTotal = 0;
+      try{
+        /* mede os blocos DENTRO da renderizacao (largura W, estilos do PC), nao na janela real do celular */
+        const mede = (doc) => {
+          const f = doc.getElementById('rsFolha'); if(!f) return;
+          const topF = f.getBoundingClientRect().top;
           const R = el => { const r = el.getBoundingClientRect(); return {t:r.top-topF, b:r.bottom-topF}; };
           const uni = (x,y) => ({t:Math.min(x.t,y.t), b:Math.max(x.b,y.b)});
-          atomos.push(R(folha.querySelector('.rs-cab')));
-          const at = folha.querySelector('.rs-atencao'); if(at) atomos.push(R(at));
-          folha.querySelectorAll('.rs-bloco').forEach(bl=>{
-            const h = R(bl.querySelector('h3')), cs = [...bl.querySelectorAll('.rs-cards .rs-card')].map(R);
-            if(cs.length){ atomos.push(uni(h, cs[0])); cs.slice(1).forEach(c=>atomos.push(c)); } else atomos.push(h);
-          });
-          atomos.push(R(folha.querySelector('.rs-rod')));
-          altTotal = folha.scrollHeight;
-          canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:LARG, width:LARG, height:altTotal});
-        } finally { folha.classList.remove('rs-pdf-m'); folha.style.width = largAntes; folha.style.minWidth = minAntes; }
-        const maxAt = Math.max(...atomos.map(x=>x.b-x.t));
-        const H = Math.max(747, Math.ceil(maxAt) + 16);
-        const paginas = []; let i = 0, ini = 0;
-        while(i < atomos.length){
-          let j = i; while(j+1 < atomos.length && atomos[j+1].b - ini + 8 <= H) j++;
-          paginas.push([ini, Math.min(altTotal, atomos[j].b + 8)]);
-          i = j + 1; if(i < atomos.length) ini = Math.max(0, atomos[i].t - 6);
-        }
-        pdf = new window.jspdf.jsPDF({orientation:'portrait', unit:'px', format:[LARG,H], hotfixes:['px_scaling'], compress:true});
-        paginas.forEach(([y0,y1],n)=>{
-          const pc = document.createElement('canvas'); pc.width = LARG*2; pc.height = H*2;
-          const cx = pc.getContext('2d'); cx.fillStyle = '#ffffff'; cx.fillRect(0,0,pc.width,pc.height);
-          cx.drawImage(canvas, 0, y0*2, LARG*2, (y1-y0)*2, 0, 0, LARG*2, (y1-y0)*2);
-          if(n>0) pdf.addPage([LARG,H], 'portrait');
-          pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, LARG, H);
-        });
-      } else {
-        folha.classList.add('rs-pdf'); folha.style.minWidth = (innerWidth < 1000 ? LARG_MIN : 0) + 'px';
-        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-        let canvas;
-        try{
-          canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true,
-            windowWidth: Math.max(folha.scrollWidth, 900), width: folha.scrollWidth, height: folha.scrollHeight});
-        } finally { folha.classList.remove('rs-pdf'); folha.style.minWidth = minAntes; }
-        // uma pagina so, do tamanho exato da folha (nada cortado, abre em qualquer leitor)
-        const w = canvas.width/2, h = canvas.height/2;
-        pdf = new window.jspdf.jsPDF({orientation: w>h?'landscape':'portrait', unit:'px', format:[w,h], hotfixes:['px_scaling'], compress:true});
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, w, h);
+          let cab = R(f.querySelector('.rs-cab')); const at = f.querySelector('.rs-atencao'); if(at) cab = uni(cab, R(at));
+          atomos = [cab];
+          f.querySelectorAll('.rs-bloco').forEach(bl=>atomos.push(R(bl)));
+          atomos.push(R(f.querySelector('.rs-rod')));
+        };
+        canvas = await html2canvas(folha, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:W, width:W, onclone: mede});
+        altTotal = canvas.height/2;
+      } finally { folha.classList.remove('rs-pdf'); folha.style.width = largAntes; folha.style.minWidth = minAntes; }
+      const H0 = Math.round(W*9/16);
+      const paginas = []; let i = 0, ini = 0;
+      while(i < atomos.length){
+        let j = i; while(j+1 < atomos.length && atomos[j+1].b - ini + 8 <= H0) j++;
+        const fim = Math.min(altTotal, atomos[j].b + 10);
+        paginas.push([ini, fim]);
+        i = j + 1; if(i < atomos.length) ini = Math.max(0, atomos[i].t - 8);
       }
+      const altP = ([y0,y1]) => Math.max(H0, Math.ceil(y1-y0));
+      let pdf = new window.jspdf.jsPDF({orientation:'landscape', unit:'px', format:[W, altP(paginas[0])], hotfixes:['px_scaling'], compress:true});
+      paginas.forEach((pg,n)=>{
+        const [y0,y1] = pg, h = altP(pg);
+        const pc = document.createElement('canvas'); pc.width = W*2; pc.height = h*2;
+        const cx = pc.getContext('2d'); cx.fillStyle = '#ffffff'; cx.fillRect(0,0,pc.width,pc.height);
+        cx.drawImage(canvas, 0, y0*2, W*2, (y1-y0)*2, 0, 0, W*2, (y1-y0)*2);
+        if(n>0) pdf.addPage([W,h], h>W?'portrait':'landscape');
+        pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, h);
+      });
       pdf.setProperties({title:'Resumo de vendas · '+colunas().titulo, author:'Comercial Bandeirantes'});
       const nomeArq = `Resumo_${colunas().titulo.replace(/[^\w.]+/g,'_')}_${P.DIA_HOJE}-${P.TOTAL_DIAS_UTEIS}.pdf`;
       const blob = pdf.output('blob');
